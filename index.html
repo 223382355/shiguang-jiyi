@@ -2,11 +2,12 @@
 <html lang="zh-CN"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>鏃跺厜璁板繂 路 瀹跺涵澶氬獟浣撴棩璁?/title>
+<title>时光记忆 · 家庭多媒体日记</title>
 <style>
 /* ============================================
-   鏃跺厜璁板繂 路 閫傝€佸寲鏍峰紡
-   鍘熷垯锛氬ぇ瀛楀彿銆佸ぇ鎸夐挳銆侀珮瀵规瘮搴︺€佹俯鏆栭厤鑹?   ============================================ */
+   时光记忆 · 适老化样式
+   原则：大字号、大按钮、高对比度、温暖配色
+   ============================================ */
 
 * {
     box-sizing: border-box;
@@ -25,7 +26,7 @@ html, body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* 绂佺敤椤甸潰缂╂斁鏃剁殑鍙屽嚮鏀惧ぇ */
+/* 禁用页面缩放时的双击放大 */
 button, input {
     font-size: inherit;
     touch-action: manipulation;
@@ -39,7 +40,7 @@ button:active {
     display: none !important;
 }
 
-/* ============== 椤堕儴鏍囬 ============== */
+/* ============== 顶部标题 ============== */
 .header {
     text-align: center;
     padding: 24px 16px 8px;
@@ -62,7 +63,7 @@ button:active {
     opacity: 0.95;
 }
 
-/* ============== 姝ラ鎸囩ず鏉?============== */
+/* ============== 步骤指示条 ============== */
 .step-bar {
     display: flex;
     align-items: center;
@@ -124,14 +125,14 @@ button:active {
     background: #4caf50;
 }
 
-/* ============== 瀹瑰櫒 ============== */
+/* ============== 容器 ============== */
 .container {
     max-width: 520px;
     margin: 0 auto;
     padding: 0 16px 40px;
 }
 
-/* ============== 闈㈡澘 ============== */
+/* ============== 面板 ============== */
 .step-panel {
     display: none;
     animation: fadeIn 0.4s ease;
@@ -175,7 +176,7 @@ button:active {
     color: #999;
 }
 
-/* ============== 澶ф寜閽紙閫氱敤锛?============== */
+/* ============== 大按钮（通用） ============== */
 .big-btn {
     display: flex;
     align-items: center;
@@ -210,7 +211,7 @@ button:active {
     font-size: 36px;
 }
 
-/* ============== 鐩告満鎸夐挳 ============== */
+/* ============== 相机按钮 ============== */
 .camera-area {
     margin-bottom: 24px;
 }
@@ -232,7 +233,7 @@ button:active {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* ============== 褰曢煶鎸夐挳 ============== */
+/* ============== 录音按钮 ============== */
 .record-area {
     text-align: center;
     padding: 30px 0;
@@ -307,7 +308,7 @@ button:active {
     font-weight: 500;
 }
 
-/* ============== 瀵艰埅鎸夐挳 ============== */
+/* ============== 导航按钮 ============== */
 .nav-btn {
     display: block;
     width: 100%;
@@ -353,7 +354,7 @@ button:active {
     cursor: pointer;
 }
 
-/* ============== 椋庢牸閫夋嫨 ============== */
+/* ============== 风格选择 ============== */
 .style-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -396,7 +397,7 @@ button:active {
     color: #2c2c2c;
 }
 
-/* ============== 鍔犺浇鍔ㄧ敾 ============== */
+/* ============== 加载动画 ============== */
 .loading-icon {
     animation: spin 1.5s linear infinite;
 }
@@ -428,7 +429,7 @@ button:active {
     100% { transform: translateX(400%); }
 }
 
-/* ============== 瑙嗛棰勮 ============== */
+/* ============== 视频预览 ============== */
 .video-box {
     position: relative;
     width: 100%;
@@ -527,7 +528,7 @@ button:active {
     to { opacity: 1; transform: translate(-50%, -50%); }
 }
 
-/* ============== 鍝嶅簲寮?============== */
+/* ============== 响应式 ============== */
 @media (max-width: 380px) {
     html, body { font-size: 20px; }
     .app-title { font-size: 32px; }
@@ -538,189 +539,192 @@ button:active {
 </head>
 <body>
 
-<!-- 椤堕儴鏍囬鏍?-->
+<!-- 顶部标题栏 -->
 <header class="header">
-    <h1 class="app-title">馃寘 鏃跺厜璁板繂</h1>
-    <p class="app-subtitle">闅忔墜涓€鎷嶏紝AI甯綘鍋氱數褰?/p>
+    <h1 class="app-title">🌅 时光记忆</h1>
+    <p class="app-subtitle">随手一拍，AI帮你做电影</p>
 </header>
 
-<!-- 姝ラ鎸囩ず鍣?-->
+<!-- 步骤指示器 -->
 <div class="step-bar">
-    <div class="step active" data-step="1"><span class="step-num">1</span>涓€鎷?/div>
+    <div class="step active" data-step="1"><span class="step-num">1</span>一拍</div>
     <div class="step-line"></div>
-    <div class="step" data-step="2"><span class="step-num">2</span>涓€璇?/div>
+    <div class="step" data-step="2"><span class="step-num">2</span>一说</div>
     <div class="step-line"></div>
-    <div class="step" data-step="3"><span class="step-num">3</span>涓€閫?/div>
+    <div class="step" data-step="3"><span class="step-num">3</span>一选</div>
     <div class="step-line"></div>
-    <div class="step" data-step="4"><span class="step-num">4</span>瀹屾垚</div>
+    <div class="step" data-step="4"><span class="step-num">4</span>完成</div>
 </div>
 
-<!-- 涓诲唴瀹瑰尯 -->
+<!-- 主内容区 -->
 <main class="container">
 
-    <!-- ============ 姝ラ1锛氭媿鐓?============ -->
+    <!-- ============ 步骤1：拍照 ============ -->
     <section id="step1" class="step-panel active">
         <div class="panel-title">
-            <span class="step-icon">馃摲</span>
-            <h2>绗竴姝?路 鎷嶄竴寮犵収鐗?/h2>
-            <p class="hint">鐐瑰嚮涓嬮潰鐨勬寜閽紝鎵撳紑鐩告満鎷嶇収</p>
+            <span class="step-icon">📷</span>
+            <h2>第一步 · 拍一张照片</h2>
+            <p class="hint">点击下面的按钮，打开相机拍照</p>
         </div>
 
         <div class="camera-area">
             <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden-input">
             <button class="big-btn camera-btn" id="cameraBtn">
-                <span class="btn-emoji">馃摳</span>
-                <span class="btn-text">鎵撳紑鐩告満鎷嶇収</span>
+                <span class="btn-emoji">📸</span>
+                <span class="btn-text">打开相机拍照</span>
             </button>
             <div class="preview-box" id="imagePreview" style="display:none;">
-                <img id="previewImg" alt="鐓х墖棰勮">
-                <button class="small-btn" id="retakeBtn">馃攧 閲嶆柊鎷嶄竴寮?/button>
+                <img id="previewImg" alt="照片预览">
+                <button class="small-btn" id="retakeBtn">🔄 重新拍一张</button>
             </div>
         </div>
 
-        <button class="nav-btn" id="toStep2" disabled="">涓嬩竴姝?鈫?/button>
+        <button class="nav-btn" id="toStep2" disabled="">下一步 →</button>
     </section>
 
-    <!-- ============ 姝ラ2锛氬綍闊?============ -->
+    <!-- ============ 步骤2：录音 ============ -->
     <section id="step2" class="step-panel">
         <div class="panel-title">
-            <span class="step-icon">馃帣锔?/span>
-            <h2>绗簩姝?路 璇村嚑鍙ヨ瘽</h2>
-            <p class="hint">鎸変綇鎸夐挳锛屽憡璇夌郴缁熶粖澶╁彂鐢熶簡浠€涔?/p>
-            <p class="hint small">锛堝彲浠ヨ鏂硅█鎴栧ぇ鐧借瘽鍝︼級</p>
+            <span class="step-icon">🎙️</span>
+            <h2>第二步 · 说几句话</h2>
+            <p class="hint">按住按钮，告诉系统今天发生了什么</p>
+            <p class="hint small">（可以说方言或大白话哦）</p>
         </div>
 
         <div class="record-area">
             <button class="record-btn" id="recordBtn">
-                <span class="record-icon">馃帳</span>
-                <span class="record-text">鎸変綇璇磋瘽</span>
+                <span class="record-icon">🎤</span>
+                <span class="record-text">按住说话</span>
             </button>
-            <p class="record-hint" id="recordHint">鎸変綇涓婇潰鐨勭孩鑹叉寜閽紑濮嬭璇濃€?/p>
+            <p class="record-hint" id="recordHint">按住上面的红色按钮开始说话…</p>
         </div>
 
-        <!-- 璇煶杞枃瀛楅瑙?-->
+        <!-- 语音转文字预览 -->
         <div class="transcript-box" id="transcriptBox" style="display:none;">
-            <p class="transcript-label">馃棧锔?浣犺鐨勬槸锛?/p>
-            <p class="transcript-text" id="transcriptText">锛堣瘑鍒腑鈥︼級</p>
-            <button class="small-btn" id="rerecordBtn">馃攧 閲嶆柊褰?/button>
+            <p class="transcript-label">🗣️ 你说的是：</p>
+            <p class="transcript-text" id="transcriptText">（识别中…）</p>
+            <button class="small-btn" id="rerecordBtn">🔄 重新录</button>
         </div>
 
         <div class="nav-row">
-            <button class="nav-btn nav-prev" id="backToStep1">鈫?涓婁竴姝?/button>
-            <button class="nav-btn" id="toStep3" disabled="">涓嬩竴姝?鈫?/button>
+            <button class="nav-btn nav-prev" id="backToStep1">← 上一步</button>
+            <button class="nav-btn" id="toStep3" disabled="">下一步 →</button>
         </div>
     </section>
 
-    <!-- ============ 姝ラ3锛氶€夐鏍?============ -->
+    <!-- ============ 步骤3：选风格 ============ -->
     <section id="step3" class="step-panel">
         <div class="panel-title">
-            <span class="step-icon">馃帹</span>
-            <h2>绗笁姝?路 閫変竴涓鏍?/h2>
-            <p class="hint">鐐逛竴绉嶄綘鍠滄鐨勯鏍硷紝AI灏卞紑濮嬪府浣犲仛瑙嗛鍟︼紒</p>
+            <span class="step-icon">🎨</span>
+            <h2>第三步 · 选一个风格</h2>
+            <p class="hint">点一种你喜欢的风格，AI就开始帮你做视频啦！</p>
         </div>
 
         <div class="style-grid">
-            <button class="style-btn" data-style="鏂囪壓">
-                <span class="style-emoji">馃尭</span>
-                <span class="style-name">鏂囪壓</span>
+            <button class="style-btn" data-style="文艺">
+                <span class="style-emoji">🌸</span>
+                <span class="style-name">文艺</span>
             </button>
-            <button class="style-btn" data-style="鍠滃簡">
-                <span class="style-emoji">馃帀</span>
-                <span class="style-name">鍠滃簡</span>
+            <button class="style-btn" data-style="喜庆">
+                <span class="style-emoji">🎉</span>
+                <span class="style-name">喜庆</span>
             </button>
-            <button class="style-btn" data-style="缇庝附">
-                <span class="style-emoji">馃寗</span>
-                <span class="style-name">缇庝附</span>
+            <button class="style-btn" data-style="美丽">
+                <span class="style-emoji">🌄</span>
+                <span class="style-name">美丽</span>
             </button>
-            <button class="style-btn" data-style="鎬€鏃?>
-                <span class="style-emoji">馃摐</span>
-                <span class="style-name">鎬€鏃?/span>
+            <button class="style-btn" data-style="怀旧">
+                <span class="style-emoji">📜</span>
+                <span class="style-name">怀旧</span>
             </button>
         </div>
 
         <div class="nav-row">
-            <button class="nav-btn nav-prev" id="backToStep2">鈫?涓婁竴姝?/button>
+            <button class="nav-btn nav-prev" id="backToStep2">← 上一步</button>
         </div>
     </section>
 
-    <!-- ============ 姝ラ3.5锛氱敓鎴愪腑 ============ -->
+    <!-- ============ 步骤3.5：生成中 ============ -->
     <section id="stepGenerating" class="step-panel">
         <div class="panel-title">
-            <span class="step-icon loading-icon">鈴?/span>
-            <h2>AI姝ｅ湪甯綘鍋氳棰戔€?/h2>
-            <p class="hint" id="generateHint">姝ｅ湪璇嗗埆鐓х墖鍐呭</p>
+            <span class="step-icon loading-icon">⏳</span>
+            <h2>AI正在帮你做视频…</h2>
+            <p class="hint" id="generateHint">正在识别照片内容</p>
         </div>
         <div class="loader">
             <div class="loader-bar"></div>
         </div>
     </section>
 
-    <!-- ============ 姝ラ4锛氳棰戦瑙?============ -->
+    <!-- ============ 步骤4：视频预览 ============ -->
     <section id="step4" class="step-panel">
         <div class="panel-title">
-            <span class="step-icon">馃幀</span>
-            <h2>鍋氬ソ鍟︼紒</h2>
-            <p class="hint">鐪嬬湅浣犵殑瀹跺涵璁板繂瑙嗛鍚?馃帀</p>
+            <span class="step-icon">🎬</span>
+            <h2>做好啦！</h2>
+            <p class="hint">看看你的家庭记忆视频吧 🎉</p>
         </div>
 
-        <!-- Canvas 瑙嗛鍚堟垚棰勮 -->
+        <!-- Canvas 视频合成预览 -->
         <div class="video-box">
             <canvas id="videoCanvas" width="720" height="1280"></canvas>
-            <button class="play-btn" id="playBtn">鈻讹笍 鎾斁瑙嗛</button>
+            <button class="play-btn" id="playBtn">▶️ 播放视频</button>
         </div>
 
         <div class="video-info">
-            <h3 id="videoTitle">鏍囬</h3>
-            <p id="videoSubtitle">鍓爣棰?/p>
+            <h3 id="videoTitle">标题</h3>
+            <p id="videoSubtitle">副标题</p>
         </div>
 
         <div class="action-grid">
             <button class="big-btn action-btn" id="downloadBtn">
-                <span class="btn-emoji">馃捑</span>
-                <span class="btn-text">淇濆瓨鍒版墜鏈?/span>
+                <span class="btn-emoji">💾</span>
+                <span class="btn-text">保存到手机</span>
             </button>
             <button class="big-btn action-btn" id="shareBtn">
-                <span class="btn-emoji">馃摛</span>
-                <span class="btn-text">鍒嗕韩缁欏浜?/span>
+                <span class="btn-emoji">📤</span>
+                <span class="btn-text">分享给家人</span>
             </button>
             <button class="big-btn action-btn" id="restartBtn">
-                <span class="btn-emoji">馃攧</span>
-                <span class="btn-text">閲嶆柊鍋氫竴涓?/span>
+                <span class="btn-emoji">🔄</span>
+                <span class="btn-text">重新做一个</span>
             </button>
         </div>
 
-        <!-- 瀛愬コ浜掑姩浜岀淮鐮侊紙绠€鍖栫増锛氱敤鏂囧瓧灞曠ず锛?-->
+        <!-- 子女互动二维码（简化版：用文字展示） -->
         <div class="share-note">
-            <p>馃挕 <strong>灏忚创澹細</strong>鍒嗕韩缁欏瓙濂冲悗锛屼粬浠彲浠ュ湪瑙嗛涓嬫柟鐣欒█璇煶鍝︼紒</p>
+            <p>💡 <strong>小贴士：</strong>分享给子女后，他们可以在视频下方留言语音哦！</p>
         </div>
     </section>
 
 </main>
 
-<!-- 闅愯棌鐨?audio 鐢ㄤ簬鎾斁褰曢煶 -->
+<!-- 隐藏的 audio 用于播放录音 -->
 <audio id="recordingPlayer" style="display:none;"></audio>
 
-<!-- 闅愯棌鐨?video 鐢ㄤ簬 MediaRecorder 杈撳嚭 -->
+<!-- 隐藏的 video 用于 MediaRecorder 输出 -->
 <video id="hiddenVideo" style="display:none;"></video>
 
-<!-- 鐘舵€?toast -->
+<!-- 状态 toast -->
 <div id="toast" class="toast"></div>
 
 <script>
 // ============================================
-// 鍏ㄥ眬鐘舵€?// ============================================
+// 全局状态
+// ============================================
 const AppState = {
     step: 1,
-    imageBase64: null,        // 鐢ㄦ埛鎷嶇収鐨?base64
-    speechBlob: null,         // 褰曢煶 Blob
-    speechText: "",           // 璇煶杞枃瀛楃粨鏋?    imageDesc: "",            // AI 璇嗗埆鍥剧墖鎻忚堪
-    selectedStyle: null,      // 鐢ㄦ埛閫夋嫨鐨勯鏍?    aiContent: null,          // AI 鐢熸垚鐨勬枃妗?瀛楀箷
-    audioChunks: [],          // 褰曢煶鍒嗙墖
-    mediaRecorder: null,      // MediaRecorder 瀹炰緥
+    imageBase64: null,        // 用户拍照的 base64
+    speechBlob: null,         // 录音 Blob
+    speechText: "",           // 语音转文字结果
+    imageDesc: "",            // AI 识别图片描述
+    selectedStyle: null,      // 用户选择的风格
+    aiContent: null,          // AI 生成的文案/字幕
+    audioChunks: [],          // 录音分片
+    mediaRecorder: null,      // MediaRecorder 实例
 };
 
 // ============================================
-// Toast 鎻愮ず
+// Toast 提示
 // ============================================
 function toast(msg, duration = 2500) {
     const t = document.getElementById("toast");
@@ -731,11 +735,12 @@ function toast(msg, duration = 2500) {
 }
 
 // ============================================
-// 姝ラ鍒囨崲
+// 步骤切换
 // ============================================
 function goStep(n) {
     AppState.step = n;
-    // 闅愯棌鎵€鏈夐潰鏉?    document.querySelectorAll(".step-panel").forEach(p => p.classList.remove("active"));
+    // 隐藏所有面板
+    document.querySelectorAll(".step-panel").forEach(p => p.classList.remove("active"));
 
     let panelId = null;
     if (n === 1) panelId = "step1";
@@ -746,11 +751,12 @@ function goStep(n) {
 
     if (panelId) document.getElementById(panelId).classList.add("active");
 
-    // 鏇存柊椤堕儴姝ラ鏉?    document.querySelectorAll(".step").forEach(el => {
+    // 更新顶部步骤条
+    document.querySelectorAll(".step").forEach(el => {
         const stepNum = parseInt(el.dataset.step);
         el.classList.remove("active", "done");
         if (n === 4) {
-            // 鍏ㄩ儴 done
+            // 全部 done
             if (stepNum <= 4) el.classList.add("done");
             if (stepNum === 4) el.classList.add("active");
         } else {
@@ -759,7 +765,8 @@ function goStep(n) {
         }
     });
 
-    // 姝ラ绾?    document.querySelectorAll(".step-line").forEach((line, i) => {
+    // 步骤线
+    document.querySelectorAll(".step-line").forEach((line, i) => {
         line.classList.remove("done");
         if (n >= 4) line.classList.add("done");
         else if (i + 1 < n) line.classList.add("done");
@@ -767,7 +774,8 @@ function goStep(n) {
 }
 
 // ============================================
-// 鍒濆鍖栨墍鏈変簨浠剁粦瀹?// ============================================
+// 初始化所有事件绑定
+// ============================================
 document.addEventListener("DOMContentLoaded", () => {
     initCamera();
     initRecorder();
@@ -783,14 +791,15 @@ function initNavigation() {
     document.getElementById("backToStep2").addEventListener("click", () => goStep(2));
 
     document.getElementById("restartBtn").addEventListener("click", () => {
-        // 閲嶇疆鐘舵€?        AppState.imageBase64 = null;
+        // 重置状态
+        AppState.imageBase64 = null;
         AppState.speechBlob = null;
         AppState.speechText = "";
         AppState.imageDesc = "";
         AppState.selectedStyle = null;
         AppState.aiContent = null;
 
-        // 閲嶇疆 UI
+        // 重置 UI
         document.getElementById("imagePreview").style.display = "none";
         document.getElementById("cameraBtn").style.display = "flex";
         document.getElementById("toStep2").disabled = true;
@@ -806,7 +815,7 @@ function initNavigation() {
 </script>
 <script>
 // ============================================
-// 鎷嶇収妯″潡
+// 拍照模块
 // ============================================
 function initCamera() {
     const cameraBtn = document.getElementById("cameraBtn");
@@ -816,12 +825,14 @@ function initCamera() {
     const previewBox = document.getElementById("imagePreview");
     const toStep2Btn = document.getElementById("toStep2");
 
-    // 鐐瑰嚮鎸夐挳瑙﹀彂鏂囦欢閫夋嫨锛堜細璋冭捣鎵嬫満鐩告満锛?    cameraBtn.addEventListener("click", () => {
+    // 点击按钮触发文件选择（会调起手机相机）
+    cameraBtn.addEventListener("click", () => {
         cameraInput.click();
     });
 
     retakeBtn.addEventListener("click", () => {
-        cameraInput.value = "";  // 娓呯┖锛屽厑璁搁噸閫夊悓涓€寮?        previewBox.style.display = "none";
+        cameraInput.value = "";  // 清空，允许重选同一张
+        previewBox.style.display = "none";
         cameraBtn.style.display = "flex";
         AppState.imageBase64 = null;
         toStep2Btn.disabled = true;
@@ -831,21 +842,21 @@ function initCamera() {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
 
-        // 璇诲彇涓?base64
+        // 读取为 base64
         try {
             const base64 = await fileToBase64(file);
             AppState.imageBase64 = base64;
 
-            // 鏄剧ず棰勮
+            // 显示预览
             previewImg.src = "data:image/jpeg;base64," + base64;
             previewBox.style.display = "block";
             cameraBtn.style.display = "none";
             toStep2Btn.disabled = false;
 
-            toast("鐓х墖鎷嶅ソ鍟︼紒");
+            toast("照片拍好啦！");
         } catch (err) {
-            console.error("璇诲彇鍥剧墖澶辫触锛?, err);
-            toast("鐓х墖璇诲彇澶辫触锛岃閲嶆媿");
+            console.error("读取图片失败：", err);
+            toast("照片读取失败，请重拍");
         }
     });
 }
@@ -854,7 +865,7 @@ function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
-            // reader.result 鏄?"data:image/jpeg;base64,xxx"
+            // reader.result 是 "data:image/jpeg;base64,xxx"
             const full = reader.result;
             const commaIdx = full.indexOf(",");
             resolve(commaIdx >= 0 ? full.substring(commaIdx + 1) : full);
@@ -867,7 +878,8 @@ function fileToBase64(file) {
 </script>
 <script>
 // ============================================
-// 褰曢煶妯″潡锛堜娇鐢?MediaRecorder锛?// ============================================
+// 录音模块（使用 MediaRecorder）
+// ============================================
 function initRecorder() {
     const recordBtn = document.getElementById("recordBtn");
     const recordIcon = recordBtn.querySelector(".record-icon");
@@ -883,20 +895,22 @@ function initRecorder() {
     let audioCtx = null;
     let silenceTimer = null;
 
-    // 闀挎寜褰曢煶锛坱ouchstart/touchend 鍏煎绉诲姩绔紱mousedown/mouseup 鍏煎妗岄潰锛?    const startRecord = async () => {
+    // 长按录音（touchstart/touchend 兼容移动端；mousedown/mouseup 兼容桌面）
+    const startRecord = async () => {
         if (isRecording) return;
         try {
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         } catch (err) {
-            console.error("楹﹀厠椋庢潈闄愰敊璇細", err);
-            toast("璇峰厑璁镐娇鐢ㄩ害鍏嬮鍝");
+            console.error("麦克风权限错误：", err);
+            toast("请允许使用麦克风哦~");
             return;
         }
 
         isRecording = true;
         AppState.audioChunks = [];
 
-        // 閫夋嫨鏀寔鐨勬牸寮?        const mimeTypes = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg", "audio/mp4"];
+        // 选择支持的格式
+        const mimeTypes = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg", "audio/mp4"];
         let mimeType = "";
         for (const t of mimeTypes) {
             if (MediaRecorder.isTypeSupported(t)) { mimeType = t; break; }
@@ -921,23 +935,23 @@ function initRecorder() {
             isRecording = false;
 
             recordBtn.classList.remove("recording");
-            recordIcon.textContent = "馃帳";
-            recordText.textContent = "鎸変綇璇磋瘽";
-            recordHint.textContent = "褰曢煶缁撴潫锛屾鍦ㄨ瘑鍒綘璇寸殑璇濃€?;
+            recordIcon.textContent = "🎤";
+            recordText.textContent = "按住说话";
+            recordHint.textContent = "录音结束，正在识别你说的话…";
 
-            // 璋冪敤鍚庣 ASR
+            // 调用后端 ASR
             transcriptBox.style.display = "block";
-            transcriptText.textContent = "锛堣瘑鍒腑鈥︼級";
+            transcriptText.textContent = "（识别中…）";
 
             try {
                 const result = await API.speechToText(blob, mimeType || "audio/webm");
-                AppState.speechText = result.text || "缇庡ソ鐨勪竴澶?;
+                AppState.speechText = result.text || "美好的一天";
                 transcriptText.textContent = AppState.speechText;
                 toStep3Btn.disabled = false;
-                toast("璇嗗埆瀹屾垚 鉁?);
+                toast("识别完成 ✓");
             } catch (err) {
-                console.error("ASR 澶辫触锛?, err);
-                AppState.speechText = "浠婂ぉ蹇冩儏寰堝ソ";
+                console.error("ASR 失败：", err);
+                AppState.speechText = "今天心情很好";
                 transcriptText.textContent = AppState.speechText;
                 toStep3Btn.disabled = false;
             }
@@ -945,9 +959,9 @@ function initRecorder() {
 
         AppState.mediaRecorder.start();
         recordBtn.classList.add("recording");
-        recordIcon.textContent = "馃敶";
-        recordText.textContent = "鏉惧紑缁撴潫";
-        recordHint.textContent = "姝ｅ湪褰曢煶鈥?鏉惧紑鎸夐挳鍋滄";
+        recordIcon.textContent = "🔴";
+        recordText.textContent = "松开结束";
+        recordHint.textContent = "正在录音… 松开按钮停止";
     };
 
     const stopRecord = () => {
@@ -959,16 +973,17 @@ function initRecorder() {
         }
     };
 
-    // 绉诲姩绔簨浠?    recordBtn.addEventListener("touchstart", (e) => { e.preventDefault(); startRecord(); });
+    // 移动端事件
+    recordBtn.addEventListener("touchstart", (e) => { e.preventDefault(); startRecord(); });
     recordBtn.addEventListener("touchend", (e) => { e.preventDefault(); stopRecord(); });
     recordBtn.addEventListener("touchcancel", (e) => { e.preventDefault(); stopRecord(); });
 
-    // 妗岄潰浜嬩欢
+    // 桌面事件
     recordBtn.addEventListener("mousedown", startRecord);
     recordBtn.addEventListener("mouseup", stopRecord);
     recordBtn.addEventListener("mouseleave", () => { if (isRecording) stopRecord(); });
 
-    // 閲嶆柊褰曢煶
+    // 重新录音
     rerecordBtn.addEventListener("click", () => {
         transcriptBox.style.display = "none";
         toStep3Btn.disabled = true;
@@ -979,7 +994,8 @@ function initRecorder() {
 
 </script>
 <script>
-// 鐩存帴璋冪敤鏅鸿氨 API锛堝崟鏂囦欢鐗堬紝鍓嶇鐩磋繛锛?const ZHIPU_API_KEY = "03fe6d36dbaa49de8b40bf978624fadb.cjaoXy1RJaHH27NG";
+// 直接调用智谱 API（单文件版，前端直连）
+const ZHIPU_API_KEY = "03fe6d36dbaa49de8b40bf978624fadb.cjaoXy1RJaHH27NG";
 const ZHIPU_BASE = "https://open.bigmodel.cn/api/paas/v4";
 
 const API = {
@@ -996,11 +1012,11 @@ const API = {
             body: JSON.stringify({
                 model: "glm-4v-plus",
                 messages: [
-                    { role: "system", content: "浣犳槸涓€浣嶈创蹇冪殑AI鍔╂墜锛屾搮闀垮府鍔╄€佸勾浜鸿褰曠敓娲汇€傝鐢ㄧ畝娲併€佹俯鏆栫殑璇█鎻忚堪鍥剧墖鍐呭銆? },
+                    { role: "system", content: "你是一位贴心的AI助手，擅长帮助老年人记录生活。请用简洁、温暖的语言描述图片内容。" },
                     {
                         role: "user",
                         content: [
-                            { type: "text", text: "璇锋弿杩拌繖寮犵収鐗囬噷鏈変粈涔堬紵鍖呮嫭锛?) 涓昏浜虹墿/鐗╀綋 2) 鍦烘櫙鍦扮偣 3) 澶╂皵/鏃堕棿 4) 鏁翠綋鎯呯华姘涘洿锛堝紑蹇冦€佸畞闈欍€佺儹闂广€佹€€鏃х瓑锛夈€傜敤绠€鐭殑鍑犲彞璇濊銆? },
+                            { type: "text", text: "请描述这张照片里有什么？包括：1) 主要人物/物体 2) 场景地点 3) 天气/时间 4) 整体情绪氛围（开心、宁静、热闹、怀旧等）。用简短的几句话说。" },
                             { type: "image_url", image_url: { url: `data:image/${fmt};base64,${imgData}` } }
                         ]
                     }
@@ -1010,7 +1026,7 @@ const API = {
         });
         const data = await resp.json();
         if (data.choices) return { ok: true, description: data.choices[0].message.content };
-        throw new Error("鍥剧墖璇嗗埆澶辫触");
+        throw new Error("图片识别失败");
     },
 
     async speechToText(blob) {
@@ -1025,33 +1041,37 @@ const API = {
         });
         const data = await resp.json();
         if (data.text) return { ok: true, text: data.text };
-        return { ok: true, text: "浠婂ぉ鐨勫績鎯呭緢缇庡ソ" };
+        return { ok: true, text: "今天的心情很美好" };
     },
 
     async generateContent(imageDesc, speechText, style) {
         const stylePrompts = {
-            "鏂囪壓": "鏂囪壓娣￠泤锛屽瘜鏈夎瘲鎰?,
-            "鍠滃簡": "娆㈠揩鐑椆锛屽厖婊″枩鎮?,
-            "缇庝附": "璧炵編椋庢櫙锛屽績鎯呮剦鎮?,
-            "鎬€鏃?: "娓╅Θ鎬€鏃э紝宀佹湀鎰?
+            "文艺": "文艺淡雅，富有诗意",
+            "喜庆": "欢快热闹，充满喜悦",
+            "美丽": "赞美风景，心情愉悦",
+            "怀旧": "温馨怀旧，岁月感"
         };
         const musicMap = {
-            "鏂囪壓": "classical", "鍠滃簡": "happy", "缇庝附": "nature", "鎬€鏃?: "nostalgia"
+            "文艺": "classical", "喜庆": "happy", "美丽": "nature", "怀旧": "nostalgia"
         };
-        const prompt = `璇峰府鎴戠敓鎴愪竴娈甸€傚悎鑰佸勾浜哄垎浜殑瀹跺涵澶氬獟浣撴棩璁版枃妗堛€?
-鍥剧墖鎻忚堪锛?{imageDesc}
-鑰佷汉璇煶璁茶堪锛?{speechText}
-閫夋嫨椋庢牸锛?{style}锛?{stylePrompts[style] || ""}锛?
-璇疯繑鍥?JSON 鏍煎紡锛堜笉瑕佸姞\`\`\`锛夛細
+        const prompt = `请帮我生成一段适合老年人分享的家庭多媒体日记文案。
+
+图片描述：${imageDesc}
+老人语音讲述：${speechText}
+选择风格：${style}（${stylePrompts[style] || ""}）
+
+请返回 JSON 格式（不要加\`\`\`）：
 {
-  "title": "涓€鍙ヨ瘽鏍囬锛堜笉瓒呰繃15瀛楋級",
-  "subtitle": "鍓爣棰?鏃ユ湡涓€鍙ヨ瘽锛堜笉瓒呰繃20瀛楋級",
-  "captions": ["瀛楀箷鐭彞1", "瀛楀箷鐭彞2", "瀛楀箷鐭彞3"],
+  "title": "一句话标题（不超过15字）",
+  "subtitle": "副标题/日期一句话（不超过20字）",
+  "captions": ["字幕短句1", "字幕短句2", "字幕短句3"],
   "music": "${musicMap[style] || "classical"}"
 }
 
-瑕佹眰锛?- 璇█瑕佷翰鍒囨俯鏆栵紝鍍忓啓鏃ヨ涓€鏍?- 瀛楀箷鐭彞姣忓彞涓嶈秴杩?2瀛楋紝閫傚悎澶у瓧灞曠ず
-- 鏃ユ湡鐢?浠婂ぉ"鎴?XX骞碭X鏈?鍗冲彲`;
+要求：
+- 语言要亲切温暖，像写日记一样
+- 字幕短句每句不超过12字，适合大字展示
+- 日期用"今天"或"XX年XX月"即可`;
         const resp = await fetch(`${ZHIPU_BASE}/chat/completions`, {
             method: "POST",
             headers: {
@@ -1061,7 +1081,7 @@ const API = {
             body: JSON.stringify({
                 model: "glm-4-flash",
                 messages: [
-                    { role: "system", content: "浣犳槸涓€浣嶈创蹇冪殑AI鍔╂墜锛屾搮闀垮府鑰佸勾浜烘妸鐢熸椿鐐规淮鍙樻垚娓╂殩鐨勫濯掍綋鏃ヨ銆備弗鏍兼寜JSON鏍煎紡杈撳嚭銆? },
+                    { role: "system", content: "你是一位贴心的AI助手，擅长帮老年人把生活点滴变成温暖的多媒体日记。严格按JSON格式输出。" },
                     { role: "user", content: prompt }
                 ],
                 max_tokens: 1024,
@@ -1080,9 +1100,9 @@ const API = {
         }
         return {
             ok: true,
-            title: speechText.slice(0, 10) || "缇庡ソ鐨勪竴澶?,
-            subtitle: "浠婂ぉ鐨勭編濂藉洖蹇?,
-            captions: [speechText.slice(0, 10) || "鏃跺厜缂撶紦娴佹穼", "杩欎竴鍒诲€煎緱鐝嶈棌", "鎰垮瞾鏈堟俯鏌斾互寰?],
+            title: speechText.slice(0, 10) || "美好的一天",
+            subtitle: "今天的美好回忆",
+            captions: [speechText.slice(0, 10) || "时光缓缓流淌", "这一刻值得珍藏", "愿岁月温柔以待"],
             music: musicMap[style] || "classical"
         };
     }
@@ -1091,7 +1111,7 @@ const API = {
 </script>
 <script>
 // ============================================
-// Canvas 瑙嗛鍚堟垚 + MediaRecorder 褰曞埗
+// Canvas 视频合成 + MediaRecorder 录制
 // ============================================
 
 let videoAnimId = null;
@@ -1108,13 +1128,14 @@ async function initVideo() {
     downloadBtn.addEventListener("click", downloadVideo);
     shareBtn.addEventListener("click", async () => {
         if (!window.navigator.share) {
-            toast("璇峰厛鐐广€屼繚瀛樺埌鎵嬫満銆嶏紝鍐嶅埌鐩稿唽鍒嗕韩缁欏浜猴綖");
+            toast("请先点「保存到手机」，再到相册分享给家人～");
             return;
         }
-        toast("璇峰厛鐐广€屼繚瀛樺埌鎵嬫満銆嶏紝鍐嶄粠鐩稿唽鍒嗕韩缁欏浜哄惂锝?);
+        toast("请先点「保存到手机」，再从相册分享给家人吧～");
     });
 
-    // 闅愯棌褰曢煶闊抽鍏冪礌锛岀敤浜庢挱鏀剧敤鎴峰師澹?    const recPlayer = document.getElementById("recordingPlayer");
+    // 隐藏录音音频元素，用于播放用户原声
+    const recPlayer = document.getElementById("recordingPlayer");
     recPlayer.volume = 0.7;
 }
 
@@ -1124,11 +1145,11 @@ async function toggleVideoPlay() {
 
     if (isVideoPlaying) {
         stopVideoPlayback();
-        playBtn.textContent = "鈻讹笍 鎾斁瑙嗛";
+        playBtn.textContent = "▶️ 播放视频";
         return;
     }
 
-    // 鍚姩闊充箰
+    // 启动音乐
     if (currentMusicGen) {
         currentMusicGen.stop();
     }
@@ -1136,17 +1157,18 @@ async function toggleVideoPlay() {
     currentMusicGen = new MusicGenerator(musicStyle, 12);
     await currentMusicGen.start();
 
-    // 濡傛灉鏈夊綍闊筹紝涔熸挱鏀惧師澹?    const recPlayer = document.getElementById("recordingPlayer");
+    // 如果有录音，也播放原声
+    const recPlayer = document.getElementById("recordingPlayer");
     if (AppState.speechBlob) {
         recPlayer.src = URL.createObjectURL(AppState.speechBlob);
         try { await recPlayer.play(); } catch (e) {}
     }
 
-    // 鍚姩 Canvas 鍔ㄧ敾
+    // 启动 Canvas 动画
     isVideoPlaying = true;
     videoStartTime = performance.now();
     animateVideo();
-    playBtn.textContent = "鈴革笍 鏆傚仠";
+    playBtn.textContent = "⏸️ 暂停";
 }
 
 function stopVideoPlayback() {
@@ -1159,7 +1181,7 @@ function stopVideoPlayback() {
     }
     const recPlayer = document.getElementById("recordingPlayer");
     try { recPlayer.pause(); } catch (e) {}
-    document.getElementById("playBtn").textContent = "鈻讹笍 鎾斁瑙嗛";
+    document.getElementById("playBtn").textContent = "▶️ 播放视频";
 }
 
 function animateVideo() {
@@ -1174,9 +1196,11 @@ function animateVideo() {
     if (elapsed < totalDuration + 0.5) {
         videoAnimId = requestAnimationFrame(animateVideo);
     } else {
-        // 瑙嗛缁撴潫锛岃嚜鍔ㄥ洖鏀?        stopVideoPlayback();
+        // 视频结束，自动回放
+        stopVideoPlayback();
         setTimeout(() => {
-            // 鍥炲埌鍒濆鐘舵€?            drawFirstFrame();
+            // 回到初始状态
+            drawFirstFrame();
         }, 300);
     }
 }
@@ -1187,41 +1211,42 @@ function drawFirstFrame() {
     renderFrame(ctx, canvas, 0, 12);
 }
 
-// 娓叉煋鍗曞抚锛氳儗鏅笎鍙樿壊 + Ken Burns 鍥剧墖 + 澶у瓧瀛楀箷
+// 渲染单帧：背景渐变色 + Ken Burns 图片 + 大字字幕
 function renderFrame(ctx, canvas, elapsed, totalDuration) {
     const W = canvas.width;
     const H = canvas.height;
-    const style = AppState.selectedStyle || "鏂囪壓";
+    const style = AppState.selectedStyle || "文艺";
 
-    // === 1. 娓愬彉鑳屾櫙 ===
+    // === 1. 渐变背景 ===
     const bgColors = {
-        "鏂囪壓": ["#fce4ec", "#f8bbd9"],
-        "鍠滃簡": ["#ffe0b2", "#ff7043"],
-        "缇庝附": ["#e1f5fe", "#4fc3f7"],
-        "鎬€鏃?: ["#efebe9", "#a1887f"]
+        "文艺": ["#fce4ec", "#f8bbd9"],
+        "喜庆": ["#ffe0b2", "#ff7043"],
+        "美丽": ["#e1f5fe", "#4fc3f7"],
+        "怀旧": ["#efebe9", "#a1887f"]
     };
-    const colors = bgColors[style] || bgColors["鏂囪壓"];
+    const colors = bgColors[style] || bgColors["文艺"];
     const grad = ctx.createLinearGradient(0, 0, W, H);
     grad.addColorStop(0, colors[0]);
     grad.addColorStop(1, colors[1]);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
-    // === 2. Ken Burns 鏁堟灉锛堝浘鐗囨參鎱㈡斁澶?骞崇Щ锛?===
+    // === 2. Ken Burns 效果（图片慢慢放大+平移） ===
     const img = AppState._videoImage || null;
     if (img) {
         const imgAspect = img.width / img.height;
         const canvasAspect = W / H;
 
-        // Ken Burns: 浠?scale=1.0 鍒?scale=1.15
+        // Ken Burns: 从 scale=1.0 到 scale=1.15
         const progress = elapsed / totalDuration;
         const scale = 1.0 + 0.15 * progress;
 
-        // 杞诲井骞崇Щ
+        // 轻微平移
         const tx = Math.sin(progress * Math.PI * 2) * 20;
         const ty = Math.cos(progress * Math.PI * 2) * 15;
 
-        // 璁＄畻缁樺埗灏哄锛坈over 妯″紡锛?        let drawW, drawH, offsetX, offsetY;
+        // 计算绘制尺寸（cover 模式）
+        let drawW, drawH, offsetX, offsetY;
         if (imgAspect > canvasAspect) {
             drawH = H * scale;
             drawW = drawH * imgAspect;
@@ -1234,13 +1259,15 @@ function renderFrame(ctx, canvas, elapsed, totalDuration) {
             offsetY = (H - drawH) / 2 + ty;
         }
 
-        // 缁樺埗鍥剧墖
+        // 绘制图片
         ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
 
-        // 鍔犲崐閫忔槑閬僵锛岃瀛楀箷鏇存竻鏅?        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        // 加半透明遮罩，让字幕更清晰
+        ctx.fillStyle = "rgba(0,0,0,0.25)";
         ctx.fillRect(0, 0, W, H);
     } else {
-        // 娌″浘鐗囨椂鐢昏楗?        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        // 没图片时画装饰
+        ctx.fillStyle = "rgba(255,255,255,0.3)";
         for (let i = 0; i < 5; i++) {
             ctx.beginPath();
             ctx.arc(W * (0.15 + i * 0.2), H * 0.4, 40 + i * 20, 0, Math.PI * 2);
@@ -1248,13 +1275,14 @@ function renderFrame(ctx, canvas, elapsed, totalDuration) {
         }
     }
 
-    // === 3. 鏍囬 ===
+    // === 3. 标题 ===
     const content = AppState.aiContent || {};
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    // 鍓爣棰橈紙椤堕儴锛?    if (content.subtitle) {
+    // 副标题（顶部）
+    if (content.subtitle) {
         ctx.font = "bold 32px 'Microsoft YaHei', sans-serif";
         ctx.shadowColor = "rgba(0,0,0,0.8)";
         ctx.shadowBlur = 10;
@@ -1262,21 +1290,23 @@ function renderFrame(ctx, canvas, elapsed, totalDuration) {
         ctx.fillText(content.subtitle, W / 2, 100);
     }
 
-    // 涓绘爣棰?    if (content.title) {
+    // 主标题
+    if (content.title) {
         ctx.font = "bold 52px 'Microsoft YaHei', sans-serif";
         ctx.shadowColor = "rgba(0,0,0,0.9)";
         ctx.shadowBlur = 12;
         ctx.fillText(content.title, W / 2, 160);
     }
 
-    // === 4. 瀛楀箷鐭彞锛堝垎闃舵鏄剧ず锛?===
+    // === 4. 字幕短句（分阶段显示） ===
     const captions = content.captions || [];
     if (captions.length > 0) {
         const captionDuration = totalDuration / captions.length;
         const captionIdx = Math.min(Math.floor(elapsed / captionDuration), captions.length - 1);
         const caption = captions[captionIdx];
 
-        // 搴曢儴瀛楀箷妗嗭紙鍗婇€忔槑榛戝簳锛?        ctx.shadowBlur = 0;
+        // 底部字幕框（半透明黑底）
+        ctx.shadowBlur = 0;
         const boxW = W - 80;
         const boxH = 120;
         const boxX = 40;
@@ -1292,14 +1322,14 @@ function renderFrame(ctx, canvas, elapsed, totalDuration) {
         wrapText(ctx, caption, W / 2, boxY + boxH / 2, boxW - 20, 58);
     }
 
-    // === 5. 椋庢牸瑙掓爣 ===
+    // === 5. 风格角标 ===
     ctx.shadowBlur = 0;
     ctx.font = "24px 'Microsoft YaHei', sans-serif";
     ctx.fillStyle = "rgba(255,255,255,0.85)";
     ctx.textAlign = "left";
-    ctx.fillText("馃寘 鏃跺厜璁板繂", 30, H - 30);
+    ctx.fillText("🌅 时光记忆", 30, H - 30);
 
-    // === 6. 杩涘害鏉?===
+    // === 6. 进度条 ===
     const barW = W - 80;
     const barX = 40;
     const barY = 40;
@@ -1324,12 +1354,12 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 function wrapText(ctx, text, centerX, centerY, maxWidth, lineHeight) {
-    // 绠€鍗曠殑鍗曟樉绀猴細濡傛灉鏂囧瓧涓嶉暱灏辩洿鎺ョ敾
+    // 简单的单显示：如果文字不长就直接画
     if (ctx.measureText(text).width <= maxWidth) {
         ctx.fillText(text, centerX, centerY);
         return;
     }
-    // 鍚﹀垯鎹㈣鏄剧ず
+    // 否则换行显示
     let line = "";
     const lines = [];
     for (let i = 0; i < text.length; i++) {
@@ -1349,7 +1379,8 @@ function wrapText(ctx, text, centerX, centerY, maxWidth, lineHeight) {
     });
 }
 
-// 棰勫姞杞界敤鎴风収鐗?async function loadVideoImage() {
+// 预加载用户照片
+async function loadVideoImage() {
     if (!AppState.imageBase64) return null;
     return new Promise((resolve) => {
         const img = new Image();
@@ -1362,18 +1393,20 @@ function wrapText(ctx, text, centerX, centerY, maxWidth, lineHeight) {
     });
 }
 
-// 涓嬭浇瑙嗛锛堢敤 MediaRecorder 褰曞埗 canvas锛?async function downloadVideo() {
+// 下载视频（用 MediaRecorder 录制 canvas）
+async function downloadVideo() {
     const canvas = document.getElementById("videoCanvas");
     if (!isVideoPlaying) {
-        toast("璇峰厛鎾斁瑙嗛鍝");
+        toast("请先播放视频哦~");
         return;
     }
 
-    toast("姝ｅ湪鐢熸垚瑙嗛鏂囦欢鈥?);
+    toast("正在生成视频文件…");
     try {
         const stream = canvas.captureStream(30);
 
-        // 娣诲姞褰曢煶闊宠建锛堝鏋滄湁锛?        if (AppState.speechBlob) {
+        // 添加录音音轨（如果有）
+        if (AppState.speechBlob) {
             const audioEl = new Audio();
             audioEl.src = URL.createObjectURL(AppState.speechBlob);
             audioEl.muted = false;
@@ -1382,7 +1415,8 @@ function wrapText(ctx, text, centerX, centerY, maxWidth, lineHeight) {
             audioStream.getAudioTracks().forEach(t => stream.addTrack(t));
         }
 
-        // 閫夋嫨 MediaRecorder 鏀寔鐨勬牸寮?        const mimeTypes = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
+        // 选择 MediaRecorder 支持的格式
+        const mimeTypes = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
         let mimeType = "video/webm";
         for (const t of mimeTypes) {
             if (MediaRecorder.isTypeSupported(t)) { mimeType = t; break; }
@@ -1396,33 +1430,36 @@ function wrapText(ctx, text, centerX, centerY, maxWidth, lineHeight) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `鏃跺厜璁板繂_${new Date().toLocaleDateString("zh-CN").replace(/\//g, "-")}.webm`;
+            a.download = `时光记忆_${new Date().toLocaleDateString("zh-CN").replace(/\//g, "-")}.webm`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            toast("淇濆瓨鎴愬姛锛佽鍒扮浉鍐屾煡鐪?馃帀");
+            toast("保存成功！请到相册查看 🎉");
         };
 
         recorder.start();
         setTimeout(() => {
             recorder.stop();
-        }, 12000);  // 褰曞埗12绉?
+        }, 12000);  // 录制12秒
+
     } catch (err) {
-        console.error("褰曞埗澶辫触锛?, err);
-        toast("瑙嗛褰曞埗澶辫触锛屼絾鍙互姝ｅ父鎾斁");
+        console.error("录制失败：", err);
+        toast("视频录制失败，但可以正常播放");
     }
 }
 
 </script>
 <script>
 // ============================================
-// Web Audio API 鐢熸垚鑳屾櫙闊充箰锛堟牴鎹鏍硷級
-// 鐢熸垚绠€鍗曠殑閽㈢惔/姘戜箰椋庢牸鍜屽鸡鏃嬪緥锛岄伩鍏嶄緷璧栧閮ㄩ煶棰戞枃浠?// ============================================
+// Web Audio API 生成背景音乐（根据风格）
+// 生成简单的钢琴/民乐风格和弦旋律，避免依赖外部音频文件
+// ============================================
 
-// 椋庢牸瀵瑰簲鐨勭畝鍗曞拰寮﹁繘琛?const STYLE_CHORDS = {
+// 风格对应的简单和弦进行
+const STYLE_CHORDS = {
     classical: {
-        name: "鍙ゅ吀",
+        name: "古典",
         bpm: 60,
         chords: [
             ["C4", "E4", "G4"], ["G4", "B4", "D5"],
@@ -1433,7 +1470,7 @@ function wrapText(ctx, text, centerX, centerY, maxWidth, lineHeight) {
         melody: ["C5", "E5", "G5", "E5", "C5", "G4", "E4", "C4"]
     },
     happy: {
-        name: "鍠滃簡",
+        name: "喜庆",
         bpm: 100,
         chords: [
             ["C4", "E4", "G4"], ["F4", "A4", "C5"],
@@ -1444,7 +1481,7 @@ function wrapText(ctx, text, centerX, centerY, maxWidth, lineHeight) {
         melody: ["C5", "D5", "E5", "G5", "E5", "D5", "C5", "A4"]
     },
     nature: {
-        name: "缇庝附",
+        name: "美丽",
         bpm: 55,
         chords: [
             ["D4", "F#4", "A4"], ["G4", "B4", "D5"],
@@ -1455,7 +1492,7 @@ function wrapText(ctx, text, centerX, centerY, maxWidth, lineHeight) {
         melody: ["D5", "F#5", "A5", "F#5", "D5", "B4", "F#4", "D4"]
     },
     nostalgia: {
-        name: "鎬€鏃?,
+        name: "怀旧",
         bpm: 50,
         chords: [
             ["Am", "C", "E"], ["G", "B", "D"],
@@ -1467,7 +1504,8 @@ function wrapText(ctx, text, centerX, centerY, maxWidth, lineHeight) {
     }
 };
 
-// MIDI 闊崇杞鐜?const NOTE_FREQ = {
+// MIDI 音符转频率
+const NOTE_FREQ = {
     "C3": 130.81, "C#3": 138.59, "D3": 146.83, "D#3": 155.56,
     "E3": 164.81, "F3": 174.61, "F#3": 185.00, "G3": 196.00,
     "G#3": 207.65, "A3": 220.00, "A#3": 233.08, "B3": 246.94,
@@ -1478,7 +1516,7 @@ function wrapText(ctx, text, centerX, centerY, maxWidth, lineHeight) {
     "E5": 659.25, "F5": 698.46, "F#5": 739.99, "G5": 783.99,
     "G#5": 830.61, "A5": 880.00, "A#5": 932.33, "B5": 987.77,
     "C6": 1046.50,
-    // 绠€鍐欏拰寮﹀悕
+    // 简写和弦名
     "Am": 220.00, "C": 261.63, "E": 329.63, "G": 392.00,
     "F": 349.23, "A": 440.00, "B": 493.88, "D": 293.66,
 };
@@ -1496,7 +1534,7 @@ class MusicGenerator {
         try {
             this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         } catch (e) {
-            console.warn("Web Audio 涓嶅彲鐢?);
+            console.warn("Web Audio 不可用");
             return;
         }
         if (this.audioCtx.state === "suspended") {
@@ -1518,13 +1556,14 @@ class MusicGenerator {
         const beatDur = 60 / style.bpm;
         const totalBeats = Math.ceil(this.duration / beatDur);
 
-        // 姣忎釜鍜屽鸡鎸佺画 2 鎷?        for (let i = 0; i < totalBeats; i += 2) {
+        // 每个和弦持续 2 拍
+        for (let i = 0; i < totalBeats; i += 2) {
             const chordIdx = (i / 2) % style.chords.length;
             const chord = style.chords[chordIdx];
             const startT = ctx.currentTime + i * beatDur;
             const endT = startT + beatDur * 2;
 
-            // 鎾斁鍜屽鸡锛堝垎瑙ｅ拰寮﹂鏍硷紝姣忎釜闊抽敊寮€涓€鐐癸級
+            // 播放和弦（分解和弦风格，每个音错开一点）
             chord.forEach((note, j) => {
                 const freq = NOTE_FREQ[note];
                 if (!freq) return;
@@ -1533,7 +1572,7 @@ class MusicGenerator {
             });
         }
 
-        // 鏃嬪緥锛堟瘡鎷嶄竴涓級
+        // 旋律（每拍一个）
         for (let i = 0; i < totalBeats; i++) {
             const melIdx = i % style.melody.length;
             const note = style.melody[melIdx];
@@ -1550,10 +1589,10 @@ class MusicGenerator {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
-        osc.type = "sine";  // 娓╂殩鐨勬寮︽尝
+        osc.type = "sine";  // 温暖的正弦波
         osc.frequency.value = freq;
 
-        // ADSR 鍖呯粶
+        // ADSR 包络
         const attack = 0.05;
         const decay = 0.1;
         const sustain = volume * 0.6;
@@ -1578,7 +1617,8 @@ class MusicGenerator {
 </script>
 <script>
 // ============================================
-// 椋庢牸閫夋嫨 + AI 璋冪敤 + 瑙嗛鐢熸垚涓绘祦绋?// ============================================
+// 风格选择 + AI 调用 + 视频生成主流程
+// ============================================
 
 function initStyleSelect() {
     document.querySelectorAll(".style-btn").forEach(btn => {
@@ -1587,7 +1627,7 @@ function initStyleSelect() {
             btn.classList.add("selected");
             AppState.selectedStyle = btn.dataset.style;
 
-            // 寮€濮?AI 澶勭悊
+            // 开始 AI 处理
             generateEverything();
         });
     });
@@ -1595,24 +1635,24 @@ function initStyleSelect() {
 
 async function generateEverything() {
     try {
-        // 杩涘叆"鐢熸垚涓?椤甸潰
+        // 进入"生成中"页面
         goStep(3.5);
 
         const hint = document.getElementById("generateHint");
 
-        // Step 1: 鍥剧墖璇嗗埆
-        hint.textContent = "馃摲 姝ｅ湪璇嗗埆鐓х墖閲岀殑鍐呭鈥?;
-        let imageDesc = "鐢ㄦ埛鐨勭敓娲绘棩甯?;
+        // Step 1: 图片识别
+        hint.textContent = "📷 正在识别照片里的内容…";
+        let imageDesc = "用户的生活日常";
         try {
             const r = await API.analyzeImage(AppState.imageBase64);
             imageDesc = r.description || imageDesc;
         } catch (e) {
-            console.warn("鍥剧墖璇嗗埆澶辫触锛堝厹搴曪級锛?, e);
+            console.warn("图片识别失败（兜底）：", e);
         }
         AppState.imageDesc = imageDesc;
 
-        // Step 2: 鐢熸垚鏂囨/瀛楀箷
-        hint.textContent = "鉁嶏笍 姝ｅ湪涓轰綘娑﹁壊鎴愭俯鏆栫殑鏃ヨ鈥?;
+        // Step 2: 生成文案/字幕
+        hint.textContent = "✍️ 正在为你润色成温暖的日记…";
         let aiContent;
         try {
             aiContent = await API.generateContent(
@@ -1621,33 +1661,34 @@ async function generateEverything() {
                 AppState.selectedStyle
             );
         } catch (e) {
-            console.warn("鏂囨鐢熸垚澶辫触锛堝厹搴曪級锛?, e);
+            console.warn("文案生成失败（兜底）：", e);
             aiContent = {
                 ok: true,
-                title: AppState.speechText?.slice(0, 10) || "缇庡ソ鍥炲繂",
-                subtitle: "浠婂ぉ鐨勬俯鏆栬褰?,
-                captions: ["鏃跺厜缂撶紦娴佹穼", "杩欎竴鍒诲€煎緱鐝嶈棌", "鎰垮瞾鏈堟俯鏌斾互寰?],
+                title: AppState.speechText?.slice(0, 10) || "美好回忆",
+                subtitle: "今天的温暖记录",
+                captions: ["时光缓缓流淌", "这一刻值得珍藏", "愿岁月温柔以待"],
                 music: "classical"
             };
         }
         AppState.aiContent = aiContent;
 
-        // Step 3: 棰勫姞杞界収鐗囧埌 canvas
-        hint.textContent = "馃幀 姝ｅ湪鍚堟垚瑙嗛鐢婚潰鈥?;
+        // Step 3: 预加载照片到 canvas
+        hint.textContent = "🎬 正在合成视频画面…";
         await loadVideoImage();
 
-        // Step 4: 鏄剧ず鏍囬淇℃伅
-        document.getElementById("videoTitle").textContent = aiContent.title || "缇庡ソ鍥炲繂";
+        // Step 4: 显示标题信息
+        document.getElementById("videoTitle").textContent = aiContent.title || "美好回忆";
         document.getElementById("videoSubtitle").textContent = aiContent.subtitle || "";
 
-        // Step 5: 鍒囨崲鍒拌棰戦〉闈紝缁樺埗绗竴甯?        goStep(4);
+        // Step 5: 切换到视频页面，绘制第一帧
+        goStep(4);
         drawFirstFrame();
 
-        toast("鍋氬ソ鍟︼紒鐐瑰嚮鈻讹笍鎾斁鐪嬬湅~");
+        toast("做好啦！点击▶️播放看看~");
 
     } catch (err) {
-        console.error("鐢熸垚澶辫触锛?, err);
-        toast("鍑轰簡鐐归棶棰橈紝璇曡瘯閲嶆柊鏉ヤ竴娆★紵");
+        console.error("生成失败：", err);
+        toast("出了点问题，试试重新来一次？");
         goStep(1);
     }
 }
