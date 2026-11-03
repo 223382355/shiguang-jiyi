@@ -291,6 +291,17 @@ button:active {
     font-size: 18px;
 }
 
+.link-btn {
+    margin-top: 14px;
+    padding: 10px 18px;
+    border: 1px dashed #c9b18a;
+    border-radius: 999px;
+    background: transparent;
+    color: #8a6d3b;
+    font-size: 17px;
+    cursor: pointer;
+}
+
 .transcript-box {
     background: white;
     border-radius: 20px;
@@ -732,6 +743,7 @@ button:active {
                 <span class="record-text">点击说话</span>
             </button>
             <p class="record-hint" id="recordHint">点一下红色按钮开始说话，说完再点一下结束</p>
+            <button class="link-btn" id="manualToggleBtn">✏️ 不方便说话？直接打字</button>
         </div>
 
         <!-- 语音转文字预览 -->
@@ -1026,6 +1038,14 @@ function initNavigation() {
 function initManualInput() {
     const saveBtn = document.getElementById("manualSaveBtn");
     const textArea = document.getElementById("manualText");
+    const manualBox = document.getElementById("manualBox");
+
+    // 任何时候都能切到打字模式，不用等录音失败
+    document.getElementById("manualToggleBtn").addEventListener("click", () => {
+        manualBox.style.display = "block";
+        textArea.focus();
+    });
+
     saveBtn.addEventListener("click", () => {
         const v = textArea.value.trim();
         if (!v) {
@@ -1192,14 +1212,39 @@ function initRecorder() {
             return;
         }
 
-        recordHint.textContent = "正在打开麦克风…";
+        // 权限状态预检（部分浏览器不支持，忽略即可）
+        let micDenied = false;
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (err) {
-            console.error("麦克风权限错误：", err);
-            recordHint.textContent = "麦克风没打开，可以直接打字";
+            if (navigator.permissions && navigator.permissions.query) {
+                const st = await navigator.permissions.query({ name: "microphone" });
+                micDenied = st.state === "denied";
+            }
+        } catch (e) { /* 不支持检测就继续尝试 */ }
+
+        if (micDenied) {
+            recordHint.textContent = "麦克风权限被拒绝了，可以直接打字";
             document.getElementById("manualBox").style.display = "block";
-            toast("请允许使用麦克风，或直接在下方打字");
+            toast("麦克风被禁用：请在浏览器设置里允许麦克风，或直接打字");
+            return;
+        }
+
+        recordHint.textContent = "正在打开麦克风…（手机上会弹出允许提示）";
+        const micPromise = navigator.mediaDevices.getUserMedia({ audio: true });
+        try {
+            // 部分浏览器权限弹窗不点就永远不返回，加超时兜底
+            stream = await Promise.race([
+                micPromise,
+                new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 12000))
+            ]);
+        } catch (err) {
+            console.error("麦克风错误：", err);
+            // 超时后再授权成功的，要记得关掉，避免一直占用麦克风
+            micPromise.then(s => { if (!isRecording) s.getTracks().forEach(t => t.stop()); }).catch(() => {});
+            recordHint.textContent = "麦克风没有打开，可以直接打字";
+            document.getElementById("manualBox").style.display = "block";
+            toast(err.message === "TIMEOUT"
+                ? "麦克风没有响应，请在下方直接打字"
+                : "请允许使用麦克风，或直接在下方打字");
             return;
         }
         document.getElementById("manualBox").style.display = "none";
