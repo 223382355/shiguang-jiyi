@@ -1,18 +1,550 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
+<html lang="zh-CN"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>鏃跺厜璁板繂 路 瀹跺涵澶氬獟浣撴棩璁?/title>
-<link rel="stylesheet" href="/static/css/style.css">
+<style>
+/* ============================================
+   鏃跺厜璁板繂 路 閫傝€佸寲鏍峰紡
+   鍘熷垯锛氬ぇ瀛楀彿銆佸ぇ鎸夐挳銆侀珮瀵规瘮搴︺€佹俯鏆栭厤鑹?   ============================================ */
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "SimHei", sans-serif;
+    font-size: 22px;
+    line-height: 1.6;
+    color: #2c2c2c;
+    background: linear-gradient(180deg, #fff8f0 0%, #fef3e2 100%);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 绂佺敤椤甸潰缂╂斁鏃剁殑鍙屽嚮鏀惧ぇ */
+button, input {
+    font-size: inherit;
+    touch-action: manipulation;
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+.hidden-input {
+    display: none !important;
+}
+
+/* ============== 椤堕儴鏍囬 ============== */
+.header {
+    text-align: center;
+    padding: 24px 16px 8px;
+    background: linear-gradient(135deg, #ff9a76 0%, #ff6b6b 100%);
+    color: white;
+    border-radius: 0 0 30px 30px;
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.25);
+}
+
+.app-title {
+    margin: 0;
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.app-subtitle {
+    margin: 6px 0 12px;
+    font-size: 20px;
+    opacity: 0.95;
+}
+
+/* ============== 姝ラ鎸囩ず鏉?============== */
+.step-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 12px;
+    gap: 4px;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 16px;
+    color: #aaa;
+    font-weight: 600;
+    min-width: 56px;
+}
+
+.step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.step.active {
+    color: #ff6b6b;
+}
+
+.step.active .step-num {
+    background: #ff6b6b;
+    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.4);
+}
+
+.step.done {
+    color: #4caf50;
+}
+
+.step.done .step-num {
+    background: #4caf50;
+}
+
+.step-line {
+    width: 30px;
+    height: 3px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin-bottom: 16px;
+}
+
+.step-line.done {
+    background: #4caf50;
+}
+
+/* ============== 瀹瑰櫒 ============== */
+.container {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0 16px 40px;
+}
+
+/* ============== 闈㈡澘 ============== */
+.step-panel {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.step-panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.panel-title {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.step-icon {
+    font-size: 50px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.panel-title h2 {
+    margin: 0 0 8px;
+    font-size: 30px;
+    color: #2c2c2c;
+    font-weight: 700;
+}
+
+.hint {
+    margin: 0;
+    color: #777;
+    font-size: 20px;
+}
+
+.hint.small {
+    font-size: 17px;
+    color: #999;
+}
+
+/* ============== 澶ф寜閽紙閫氱敤锛?============== */
+.big-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 90px;
+    border: none;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #ff9a76 0%, #ff6b6b 100%);
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.35);
+    transition: all 0.2s;
+    padding: 16px 24px;
+}
+
+.big-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+}
+
+.big-btn:disabled {
+    background: #ccc;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.btn-emoji {
+    font-size: 36px;
+}
+
+/* ============== 鐩告満鎸夐挳 ============== */
+.camera-area {
+    margin-bottom: 24px;
+}
+
+.camera-btn {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    box-shadow: 0 6px 20px rgba(86, 171, 47, 0.35);
+}
+
+.preview-box {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.preview-box img {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ============== 褰曢煶鎸夐挳 ============== */
+.record-area {
+    text-align: center;
+    padding: 30px 0;
+}
+
+.record-btn {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(255, 75, 43, 0.45);
+    transition: all 0.15s;
+}
+
+.record-btn:active,
+.record-btn.recording {
+    transform: scale(0.92);
+    background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+    box-shadow: 0 4px 15px rgba(255, 75, 43, 0.35);
+}
+
+.record-icon {
+    font-size: 56px;
+    margin-bottom: 4px;
+}
+
+.record-btn.recording .record-icon {
+    animation: pulse 0.8s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+.record-text {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.record-hint {
+    margin-top: 16px;
+    color: #777;
+    font-size: 18px;
+}
+
+.transcript-box {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.transcript-label {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #888;
+}
+
+.transcript-text {
+    margin: 0 0 12px;
+    font-size: 24px;
+    color: #2c2c2c;
+    font-weight: 500;
+}
+
+/* ============== 瀵艰埅鎸夐挳 ============== */
+.nav-btn {
+    display: block;
+    width: 100%;
+    min-height: 70px;
+    border: none;
+    border-radius: 18px;
+    background: #ff6b6b;
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    margin-top: 12px;
+}
+
+.nav-btn:disabled {
+    background: #ccc;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.nav-btn.nav-prev {
+    background: #95a5a6;
+    box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+}
+
+.nav-row {
+    display: flex;
+    gap: 12px;
+}
+
+.nav-row .nav-btn {
+    flex: 1;
+}
+
+.small-btn {
+    background: #ecf0f1;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 18px;
+    color: #555;
+    cursor: pointer;
+}
+
+/* ============== 椋庢牸閫夋嫨 ============== */
+.style-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.style-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 130px;
+    border: 3px solid transparent;
+    border-radius: 24px;
+    background: white;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s;
+}
+
+.style-btn:active {
+    transform: scale(0.97);
+}
+
+.style-btn.selected {
+    border-color: #ff6b6b;
+    background: #fff5f5;
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
+}
+
+.style-emoji {
+    font-size: 50px;
+    margin-bottom: 8px;
+}
+
+.style-name {
+    font-size: 26px;
+    font-weight: 700;
+    color: #2c2c2c;
+}
+
+/* ============== 鍔犺浇鍔ㄧ敾 ============== */
+.loading-icon {
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.loader {
+    width: 80%;
+    height: 14px;
+    background: #eee;
+    border-radius: 10px;
+    margin: 30px auto;
+    overflow: hidden;
+}
+
+.loader-bar {
+    height: 100%;
+    width: 30%;
+    background: linear-gradient(90deg, #ff9a76, #ff6b6b);
+    border-radius: 10px;
+    animation: loadSlide 1.5s ease-in-out infinite;
+}
+
+@keyframes loadSlide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+}
+
+/* ============== 瑙嗛棰勮 ============== */
+.video-box {
+    position: relative;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2);
+    background: #222;
+    margin-bottom: 20px;
+}
+
+.video-box canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.play-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    padding: 14px 32px;
+    border-radius: 30px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ff6b6b;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.video-info {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 0 10px;
+}
+
+.video-info h3 {
+    margin: 0 0 4px;
+    font-size: 26px;
+    color: #2c2c2c;
+}
+
+.video-info p {
+    margin: 0;
+    font-size: 18px;
+    color: #888;
+}
+
+.action-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.action-btn {
+    min-height: 80px;
+}
+
+.share-note {
+    background: #fff9e6;
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 18px;
+    color: #8a6d3b;
+    text-align: center;
+    border: 2px dashed #f1c40f;
+}
+
+/* ============== Toast ============== */
+.toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 16px 28px;
+    border-radius: 14px;
+    font-size: 20px;
+    z-index: 9999;
+    display: none;
+    max-width: 80%;
+    text-align: center;
+}
+
+.toast.show {
+    display: block;
+    animation: toastShow 0.3s ease;
+}
+
+@keyframes toastShow {
+    from { opacity: 0; transform: translate(-50%, -40%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+/* ============== 鍝嶅簲寮?============== */
+@media (max-width: 380px) {
+    html, body { font-size: 20px; }
+    .app-title { font-size: 32px; }
+    .style-btn { min-height: 110px; }
+}
+
+</style>
 </head>
 <body>
 
+<!-- 椤堕儴鏍囬鏍?-->
 <header class="header">
-    <h1 class="app-title">?? 鏃跺厜璁板繂</h1>
+    <h1 class="app-title">馃寘 鏃跺厜璁板繂</h1>
     <p class="app-subtitle">闅忔墜涓€鎷嶏紝AI甯綘鍋氱數褰?/p>
 </header>
 
+<!-- 姝ラ鎸囩ず鍣?-->
 <div class="step-bar">
     <div class="step active" data-step="1"><span class="step-num">1</span>涓€鎷?/div>
     <div class="step-line"></div>
@@ -23,116 +555,1105 @@
     <div class="step" data-step="4"><span class="step-num">4</span>瀹屾垚</div>
 </div>
 
+<!-- 涓诲唴瀹瑰尯 -->
 <main class="container">
 
+    <!-- ============ 姝ラ1锛氭媿鐓?============ -->
     <section id="step1" class="step-panel active">
         <div class="panel-title">
-            <span class="step-icon">??</span>
+            <span class="step-icon">馃摲</span>
             <h2>绗竴姝?路 鎷嶄竴寮犵収鐗?/h2>
             <p class="hint">鐐瑰嚮涓嬮潰鐨勬寜閽紝鎵撳紑鐩告満鎷嶇収</p>
         </div>
+
         <div class="camera-area">
             <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden-input">
             <button class="big-btn camera-btn" id="cameraBtn">
-                <span class="btn-emoji">??</span>
+                <span class="btn-emoji">馃摳</span>
                 <span class="btn-text">鎵撳紑鐩告満鎷嶇収</span>
             </button>
             <div class="preview-box" id="imagePreview" style="display:none;">
                 <img id="previewImg" alt="鐓х墖棰勮">
-                <button class="small-btn" id="retakeBtn">?? 閲嶆柊鎷嶄竴寮?/button>
+                <button class="small-btn" id="retakeBtn">馃攧 閲嶆柊鎷嶄竴寮?/button>
             </div>
         </div>
-        <button class="nav-btn" id="toStep2" disabled>涓嬩竴姝?鈫?/button>
+
+        <button class="nav-btn" id="toStep2" disabled="">涓嬩竴姝?鈫?/button>
     </section>
 
+    <!-- ============ 姝ラ2锛氬綍闊?============ -->
     <section id="step2" class="step-panel">
         <div class="panel-title">
-            <span class="step-icon">???</span>
+            <span class="step-icon">馃帣锔?/span>
             <h2>绗簩姝?路 璇村嚑鍙ヨ瘽</h2>
             <p class="hint">鎸変綇鎸夐挳锛屽憡璇夌郴缁熶粖澶╁彂鐢熶簡浠€涔?/p>
             <p class="hint small">锛堝彲浠ヨ鏂硅█鎴栧ぇ鐧借瘽鍝︼級</p>
         </div>
+
         <div class="record-area">
             <button class="record-btn" id="recordBtn">
-                <span class="record-icon">??</span>
+                <span class="record-icon">馃帳</span>
                 <span class="record-text">鎸変綇璇磋瘽</span>
             </button>
             <p class="record-hint" id="recordHint">鎸変綇涓婇潰鐨勭孩鑹叉寜閽紑濮嬭璇濃€?/p>
         </div>
+
+        <!-- 璇煶杞枃瀛楅瑙?-->
         <div class="transcript-box" id="transcriptBox" style="display:none;">
-            <p class="transcript-label">??? 浣犺鐨勬槸锛?/p>
+            <p class="transcript-label">馃棧锔?浣犺鐨勬槸锛?/p>
             <p class="transcript-text" id="transcriptText">锛堣瘑鍒腑鈥︼級</p>
-            <button class="small-btn" id="rerecordBtn">?? 閲嶆柊褰?/button>
+            <button class="small-btn" id="rerecordBtn">馃攧 閲嶆柊褰?/button>
         </div>
+
         <div class="nav-row">
             <button class="nav-btn nav-prev" id="backToStep1">鈫?涓婁竴姝?/button>
-            <button class="nav-btn" id="toStep3" disabled>涓嬩竴姝?鈫?/button>
+            <button class="nav-btn" id="toStep3" disabled="">涓嬩竴姝?鈫?/button>
         </div>
     </section>
 
+    <!-- ============ 姝ラ3锛氶€夐鏍?============ -->
     <section id="step3" class="step-panel">
         <div class="panel-title">
-            <span class="step-icon">??</span>
+            <span class="step-icon">馃帹</span>
             <h2>绗笁姝?路 閫変竴涓鏍?/h2>
             <p class="hint">鐐逛竴绉嶄綘鍠滄鐨勯鏍硷紝AI灏卞紑濮嬪府浣犲仛瑙嗛鍟︼紒</p>
         </div>
+
         <div class="style-grid">
-            <button class="style-btn" data-style="鏂囪壓"><span class="style-emoji">??</span><span class="style-name">鏂囪壓</span></button>
-            <button class="style-btn" data-style="鍠滃簡"><span class="style-emoji">??</span><span class="style-name">鍠滃簡</span></button>
-            <button class="style-btn" data-style="缇庝附"><span class="style-emoji">??</span><span class="style-name">缇庝附</span></button>
-            <button class="style-btn" data-style="鎬€鏃?><span class="style-emoji">??</span><span class="style-name">鎬€鏃?/span></button>
+            <button class="style-btn" data-style="鏂囪壓">
+                <span class="style-emoji">馃尭</span>
+                <span class="style-name">鏂囪壓</span>
+            </button>
+            <button class="style-btn" data-style="鍠滃簡">
+                <span class="style-emoji">馃帀</span>
+                <span class="style-name">鍠滃簡</span>
+            </button>
+            <button class="style-btn" data-style="缇庝附">
+                <span class="style-emoji">馃寗</span>
+                <span class="style-name">缇庝附</span>
+            </button>
+            <button class="style-btn" data-style="鎬€鏃?>
+                <span class="style-emoji">馃摐</span>
+                <span class="style-name">鎬€鏃?/span>
+            </button>
         </div>
+
         <div class="nav-row">
             <button class="nav-btn nav-prev" id="backToStep2">鈫?涓婁竴姝?/button>
         </div>
     </section>
 
+    <!-- ============ 姝ラ3.5锛氱敓鎴愪腑 ============ -->
     <section id="stepGenerating" class="step-panel">
         <div class="panel-title">
-            <span class="step-icon loading-icon">?</span>
+            <span class="step-icon loading-icon">鈴?/span>
             <h2>AI姝ｅ湪甯綘鍋氳棰戔€?/h2>
             <p class="hint" id="generateHint">姝ｅ湪璇嗗埆鐓х墖鍐呭</p>
         </div>
-        <div class="loader"><div class="loader-bar"></div></div>
+        <div class="loader">
+            <div class="loader-bar"></div>
+        </div>
     </section>
 
+    <!-- ============ 姝ラ4锛氳棰戦瑙?============ -->
     <section id="step4" class="step-panel">
         <div class="panel-title">
-            <span class="step-icon">??</span>
+            <span class="step-icon">馃幀</span>
             <h2>鍋氬ソ鍟︼紒</h2>
-            <p class="hint">鐪嬬湅浣犵殑瀹跺涵璁板繂瑙嗛鍚???</p>
+            <p class="hint">鐪嬬湅浣犵殑瀹跺涵璁板繂瑙嗛鍚?馃帀</p>
         </div>
+
+        <!-- Canvas 瑙嗛鍚堟垚棰勮 -->
         <div class="video-box">
             <canvas id="videoCanvas" width="720" height="1280"></canvas>
-            <button class="play-btn" id="playBtn">?? 鎾斁瑙嗛</button>
+            <button class="play-btn" id="playBtn">鈻讹笍 鎾斁瑙嗛</button>
         </div>
+
         <div class="video-info">
             <h3 id="videoTitle">鏍囬</h3>
             <p id="videoSubtitle">鍓爣棰?/p>
         </div>
+
         <div class="action-grid">
-            <button class="big-btn action-btn" id="downloadBtn"><span class="btn-emoji">??</span><span class="btn-text">淇濆瓨鍒版墜鏈?/span></button>
-            <button class="big-btn action-btn" id="shareBtn"><span class="btn-emoji">??</span><span class="btn-text">鍒嗕韩缁欏浜?/span></button>
-            <button class="big-btn action-btn" id="restartBtn"><span class="btn-emoji">??</span><span class="btn-text">閲嶆柊鍋氫竴涓?/span></button>
+            <button class="big-btn action-btn" id="downloadBtn">
+                <span class="btn-emoji">馃捑</span>
+                <span class="btn-text">淇濆瓨鍒版墜鏈?/span>
+            </button>
+            <button class="big-btn action-btn" id="shareBtn">
+                <span class="btn-emoji">馃摛</span>
+                <span class="btn-text">鍒嗕韩缁欏浜?/span>
+            </button>
+            <button class="big-btn action-btn" id="restartBtn">
+                <span class="btn-emoji">馃攧</span>
+                <span class="btn-text">閲嶆柊鍋氫竴涓?/span>
+            </button>
         </div>
+
+        <!-- 瀛愬コ浜掑姩浜岀淮鐮侊紙绠€鍖栫増锛氱敤鏂囧瓧灞曠ず锛?-->
         <div class="share-note">
-            <p>?? <strong>灏忚创澹細</strong>鍒嗕韩缁欏瓙濂冲悗锛屼粬浠彲浠ュ湪瑙嗛涓嬫柟鐣欒█璇煶鍝︼紒</p>
+            <p>馃挕 <strong>灏忚创澹細</strong>鍒嗕韩缁欏瓙濂冲悗锛屼粬浠彲浠ュ湪瑙嗛涓嬫柟鐣欒█璇煶鍝︼紒</p>
         </div>
     </section>
 
 </main>
 
+<!-- 闅愯棌鐨?audio 鐢ㄤ簬鎾斁褰曢煶 -->
 <audio id="recordingPlayer" style="display:none;"></audio>
+
+<!-- 闅愯棌鐨?video 鐢ㄤ簬 MediaRecorder 杈撳嚭 -->
 <video id="hiddenVideo" style="display:none;"></video>
+
+<!-- 鐘舵€?toast -->
 <div id="toast" class="toast"></div>
 
-<script src="/static/js/main.js"></script>
-<script src="/static/js/camera.js"></script>
-<script src="/static/js/recorder.js"></script>
-<script src="/static/js/ai.js"></script>
-<script src="/static/js/video.js"></script>
-<script src="/static/js/music.js"></script>
-<script src="/static/js/app.js"></script>
+<script>
+// ============================================
+// 鍏ㄥ眬鐘舵€?// ============================================
+const AppState = {
+    step: 1,
+    imageBase64: null,        // 鐢ㄦ埛鎷嶇収鐨?base64
+    speechBlob: null,         // 褰曢煶 Blob
+    speechText: "",           // 璇煶杞枃瀛楃粨鏋?    imageDesc: "",            // AI 璇嗗埆鍥剧墖鎻忚堪
+    selectedStyle: null,      // 鐢ㄦ埛閫夋嫨鐨勯鏍?    aiContent: null,          // AI 鐢熸垚鐨勬枃妗?瀛楀箷
+    audioChunks: [],          // 褰曢煶鍒嗙墖
+    mediaRecorder: null,      // MediaRecorder 瀹炰緥
+};
 
-</body>
-</html>
+// ============================================
+// Toast 鎻愮ず
+// ============================================
+function toast(msg, duration = 2500) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => t.classList.remove("show"), duration);
+}
+
+// ============================================
+// 姝ラ鍒囨崲
+// ============================================
+function goStep(n) {
+    AppState.step = n;
+    // 闅愯棌鎵€鏈夐潰鏉?    document.querySelectorAll(".step-panel").forEach(p => p.classList.remove("active"));
+
+    let panelId = null;
+    if (n === 1) panelId = "step1";
+    else if (n === 2) panelId = "step2";
+    else if (n === 3) panelId = "step3";
+    else if (n === 3.5) panelId = "stepGenerating";
+    else if (n === 4) panelId = "step4";
+
+    if (panelId) document.getElementById(panelId).classList.add("active");
+
+    // 鏇存柊椤堕儴姝ラ鏉?    document.querySelectorAll(".step").forEach(el => {
+        const stepNum = parseInt(el.dataset.step);
+        el.classList.remove("active", "done");
+        if (n === 4) {
+            // 鍏ㄩ儴 done
+            if (stepNum <= 4) el.classList.add("done");
+            if (stepNum === 4) el.classList.add("active");
+        } else {
+            if (stepNum < Math.ceil(n)) el.classList.add("done");
+            if (stepNum === Math.ceil(n)) el.classList.add("active");
+        }
+    });
+
+    // 姝ラ绾?    document.querySelectorAll(".step-line").forEach((line, i) => {
+        line.classList.remove("done");
+        if (n >= 4) line.classList.add("done");
+        else if (i + 1 < n) line.classList.add("done");
+    });
+}
+
+// ============================================
+// 鍒濆鍖栨墍鏈変簨浠剁粦瀹?// ============================================
+document.addEventListener("DOMContentLoaded", () => {
+    initCamera();
+    initRecorder();
+    initStyleSelect();
+    initNavigation();
+    initVideo();
+});
+
+function initNavigation() {
+    document.getElementById("toStep2").addEventListener("click", () => goStep(2));
+    document.getElementById("toStep3").addEventListener("click", () => goStep(3));
+    document.getElementById("backToStep1").addEventListener("click", () => goStep(1));
+    document.getElementById("backToStep2").addEventListener("click", () => goStep(2));
+
+    document.getElementById("restartBtn").addEventListener("click", () => {
+        // 閲嶇疆鐘舵€?        AppState.imageBase64 = null;
+        AppState.speechBlob = null;
+        AppState.speechText = "";
+        AppState.imageDesc = "";
+        AppState.selectedStyle = null;
+        AppState.aiContent = null;
+
+        // 閲嶇疆 UI
+        document.getElementById("imagePreview").style.display = "none";
+        document.getElementById("cameraBtn").style.display = "flex";
+        document.getElementById("toStep2").disabled = true;
+        document.getElementById("transcriptBox").style.display = "none";
+        document.getElementById("toStep3").disabled = true;
+        document.querySelectorAll(".style-btn").forEach(b => b.classList.remove("selected"));
+
+        stopVideoPlayback();
+        goStep(1);
+    });
+}
+
+</script>
+<script>
+// ============================================
+// 鎷嶇収妯″潡
+// ============================================
+function initCamera() {
+    const cameraBtn = document.getElementById("cameraBtn");
+    const cameraInput = document.getElementById("cameraInput");
+    const retakeBtn = document.getElementById("retakeBtn");
+    const previewImg = document.getElementById("previewImg");
+    const previewBox = document.getElementById("imagePreview");
+    const toStep2Btn = document.getElementById("toStep2");
+
+    // 鐐瑰嚮鎸夐挳瑙﹀彂鏂囦欢閫夋嫨锛堜細璋冭捣鎵嬫満鐩告満锛?    cameraBtn.addEventListener("click", () => {
+        cameraInput.click();
+    });
+
+    retakeBtn.addEventListener("click", () => {
+        cameraInput.value = "";  // 娓呯┖锛屽厑璁搁噸閫夊悓涓€寮?        previewBox.style.display = "none";
+        cameraBtn.style.display = "flex";
+        AppState.imageBase64 = null;
+        toStep2Btn.disabled = true;
+    });
+
+    cameraInput.addEventListener("change", async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        // 璇诲彇涓?base64
+        try {
+            const base64 = await fileToBase64(file);
+            AppState.imageBase64 = base64;
+
+            // 鏄剧ず棰勮
+            previewImg.src = "data:image/jpeg;base64," + base64;
+            previewBox.style.display = "block";
+            cameraBtn.style.display = "none";
+            toStep2Btn.disabled = false;
+
+            toast("鐓х墖鎷嶅ソ鍟︼紒");
+        } catch (err) {
+            console.error("璇诲彇鍥剧墖澶辫触锛?, err);
+            toast("鐓х墖璇诲彇澶辫触锛岃閲嶆媿");
+        }
+    });
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            // reader.result 鏄?"data:image/jpeg;base64,xxx"
+            const full = reader.result;
+            const commaIdx = full.indexOf(",");
+            resolve(commaIdx >= 0 ? full.substring(commaIdx + 1) : full);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+</script>
+<script>
+// ============================================
+// 褰曢煶妯″潡锛堜娇鐢?MediaRecorder锛?// ============================================
+function initRecorder() {
+    const recordBtn = document.getElementById("recordBtn");
+    const recordIcon = recordBtn.querySelector(".record-icon");
+    const recordText = recordBtn.querySelector(".record-text");
+    const recordHint = document.getElementById("recordHint");
+    const transcriptText = document.getElementById("transcriptText");
+    const transcriptBox = document.getElementById("transcriptBox");
+    const toStep3Btn = document.getElementById("toStep3");
+    const rerecordBtn = document.getElementById("rerecordBtn");
+
+    let isRecording = false;
+    let stream = null;
+    let audioCtx = null;
+    let silenceTimer = null;
+
+    // 闀挎寜褰曢煶锛坱ouchstart/touchend 鍏煎绉诲姩绔紱mousedown/mouseup 鍏煎妗岄潰锛?    const startRecord = async () => {
+        if (isRecording) return;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (err) {
+            console.error("楹﹀厠椋庢潈闄愰敊璇細", err);
+            toast("璇峰厑璁镐娇鐢ㄩ害鍏嬮鍝");
+            return;
+        }
+
+        isRecording = true;
+        AppState.audioChunks = [];
+
+        // 閫夋嫨鏀寔鐨勬牸寮?        const mimeTypes = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg", "audio/mp4"];
+        let mimeType = "";
+        for (const t of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(t)) { mimeType = t; break; }
+        }
+
+        try {
+            AppState.mediaRecorder = mimeType
+                ? new MediaRecorder(stream, { mimeType })
+                : new MediaRecorder(stream);
+        } catch (e) {
+            AppState.mediaRecorder = new MediaRecorder(stream);
+        }
+
+        AppState.mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) AppState.audioChunks.push(e.data);
+        };
+
+        AppState.mediaRecorder.onstop = async () => {
+            stream.getTracks().forEach(t => t.stop());
+            const blob = new Blob(AppState.audioChunks, { type: mimeType || "audio/webm" });
+            AppState.speechBlob = blob;
+            isRecording = false;
+
+            recordBtn.classList.remove("recording");
+            recordIcon.textContent = "馃帳";
+            recordText.textContent = "鎸変綇璇磋瘽";
+            recordHint.textContent = "褰曢煶缁撴潫锛屾鍦ㄨ瘑鍒綘璇寸殑璇濃€?;
+
+            // 璋冪敤鍚庣 ASR
+            transcriptBox.style.display = "block";
+            transcriptText.textContent = "锛堣瘑鍒腑鈥︼級";
+
+            try {
+                const result = await API.speechToText(blob, mimeType || "audio/webm");
+                AppState.speechText = result.text || "缇庡ソ鐨勪竴澶?;
+                transcriptText.textContent = AppState.speechText;
+                toStep3Btn.disabled = false;
+                toast("璇嗗埆瀹屾垚 鉁?);
+            } catch (err) {
+                console.error("ASR 澶辫触锛?, err);
+                AppState.speechText = "浠婂ぉ蹇冩儏寰堝ソ";
+                transcriptText.textContent = AppState.speechText;
+                toStep3Btn.disabled = false;
+            }
+        };
+
+        AppState.mediaRecorder.start();
+        recordBtn.classList.add("recording");
+        recordIcon.textContent = "馃敶";
+        recordText.textContent = "鏉惧紑缁撴潫";
+        recordHint.textContent = "姝ｅ湪褰曢煶鈥?鏉惧紑鎸夐挳鍋滄";
+    };
+
+    const stopRecord = () => {
+        if (!isRecording || !AppState.mediaRecorder) return;
+        try {
+            AppState.mediaRecorder.stop();
+        } catch (e) {
+            // ignore
+        }
+    };
+
+    // 绉诲姩绔簨浠?    recordBtn.addEventListener("touchstart", (e) => { e.preventDefault(); startRecord(); });
+    recordBtn.addEventListener("touchend", (e) => { e.preventDefault(); stopRecord(); });
+    recordBtn.addEventListener("touchcancel", (e) => { e.preventDefault(); stopRecord(); });
+
+    // 妗岄潰浜嬩欢
+    recordBtn.addEventListener("mousedown", startRecord);
+    recordBtn.addEventListener("mouseup", stopRecord);
+    recordBtn.addEventListener("mouseleave", () => { if (isRecording) stopRecord(); });
+
+    // 閲嶆柊褰曢煶
+    rerecordBtn.addEventListener("click", () => {
+        transcriptBox.style.display = "none";
+        toStep3Btn.disabled = true;
+        AppState.speechBlob = null;
+        AppState.speechText = "";
+    });
+}
+
+</script>
+<script>
+// 鐩存帴璋冪敤鏅鸿氨 API锛堝崟鏂囦欢鐗堬紝鍓嶇鐩磋繛锛?const ZHIPU_API_KEY = "03fe6d36dbaa49de8b40bf978624fadb.cjaoXy1RJaHH27NG";
+const ZHIPU_BASE = "https://open.bigmodel.cn/api/paas/v4";
+
+const API = {
+    async analyzeImage(base64) {
+        let imgData = base64 || "";
+        if (imgData.includes(",")) imgData = imgData.split(",", 2)[1];
+        const fmt = imgData.startsWith("iVBOR") ? "png" : "jpeg";
+        const resp = await fetch(`${ZHIPU_BASE}/chat/completions`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${ZHIPU_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "glm-4v-plus",
+                messages: [
+                    { role: "system", content: "浣犳槸涓€浣嶈创蹇冪殑AI鍔╂墜锛屾搮闀垮府鍔╄€佸勾浜鸿褰曠敓娲汇€傝鐢ㄧ畝娲併€佹俯鏆栫殑璇█鎻忚堪鍥剧墖鍐呭銆? },
+                    {
+                        role: "user",
+                        content: [
+                            { type: "text", text: "璇锋弿杩拌繖寮犵収鐗囬噷鏈変粈涔堬紵鍖呮嫭锛?) 涓昏浜虹墿/鐗╀綋 2) 鍦烘櫙鍦扮偣 3) 澶╂皵/鏃堕棿 4) 鏁翠綋鎯呯华姘涘洿锛堝紑蹇冦€佸畞闈欍€佺儹闂广€佹€€鏃х瓑锛夈€傜敤绠€鐭殑鍑犲彞璇濊銆? },
+                            { type: "image_url", image_url: { url: `data:image/${fmt};base64,${imgData}` } }
+                        ]
+                    }
+                ],
+                max_tokens: 512
+            })
+        });
+        const data = await resp.json();
+        if (data.choices) return { ok: true, description: data.choices[0].message.content };
+        throw new Error("鍥剧墖璇嗗埆澶辫触");
+    },
+
+    async speechToText(blob) {
+        const form = new FormData();
+        form.append("model", "glm-asr-2512");
+        form.append("stream", "false");
+        form.append("file", blob, "speech.webm");
+        const resp = await fetch(`${ZHIPU_BASE}/audio/transcriptions`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${ZHIPU_API_KEY}` },
+            body: form
+        });
+        const data = await resp.json();
+        if (data.text) return { ok: true, text: data.text };
+        return { ok: true, text: "浠婂ぉ鐨勫績鎯呭緢缇庡ソ" };
+    },
+
+    async generateContent(imageDesc, speechText, style) {
+        const stylePrompts = {
+            "鏂囪壓": "鏂囪壓娣￠泤锛屽瘜鏈夎瘲鎰?,
+            "鍠滃簡": "娆㈠揩鐑椆锛屽厖婊″枩鎮?,
+            "缇庝附": "璧炵編椋庢櫙锛屽績鎯呮剦鎮?,
+            "鎬€鏃?: "娓╅Θ鎬€鏃э紝宀佹湀鎰?
+        };
+        const musicMap = {
+            "鏂囪壓": "classical", "鍠滃簡": "happy", "缇庝附": "nature", "鎬€鏃?: "nostalgia"
+        };
+        const prompt = `璇峰府鎴戠敓鎴愪竴娈甸€傚悎鑰佸勾浜哄垎浜殑瀹跺涵澶氬獟浣撴棩璁版枃妗堛€?
+鍥剧墖鎻忚堪锛?{imageDesc}
+鑰佷汉璇煶璁茶堪锛?{speechText}
+閫夋嫨椋庢牸锛?{style}锛?{stylePrompts[style] || ""}锛?
+璇疯繑鍥?JSON 鏍煎紡锛堜笉瑕佸姞\`\`\`锛夛細
+{
+  "title": "涓€鍙ヨ瘽鏍囬锛堜笉瓒呰繃15瀛楋級",
+  "subtitle": "鍓爣棰?鏃ユ湡涓€鍙ヨ瘽锛堜笉瓒呰繃20瀛楋級",
+  "captions": ["瀛楀箷鐭彞1", "瀛楀箷鐭彞2", "瀛楀箷鐭彞3"],
+  "music": "${musicMap[style] || "classical"}"
+}
+
+瑕佹眰锛?- 璇█瑕佷翰鍒囨俯鏆栵紝鍍忓啓鏃ヨ涓€鏍?- 瀛楀箷鐭彞姣忓彞涓嶈秴杩?2瀛楋紝閫傚悎澶у瓧灞曠ず
+- 鏃ユ湡鐢?浠婂ぉ"鎴?XX骞碭X鏈?鍗冲彲`;
+        const resp = await fetch(`${ZHIPU_BASE}/chat/completions`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${ZHIPU_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "glm-4-flash",
+                messages: [
+                    { role: "system", content: "浣犳槸涓€浣嶈创蹇冪殑AI鍔╂墜锛屾搮闀垮府鑰佸勾浜烘妸鐢熸椿鐐规淮鍙樻垚娓╂殩鐨勫濯掍綋鏃ヨ銆備弗鏍兼寜JSON鏍煎紡杈撳嚭銆? },
+                    { role: "user", content: prompt }
+                ],
+                max_tokens: 1024,
+                temperature: 0.7
+            })
+        });
+        const data = await resp.json();
+        if (data.choices) {
+            let content = data.choices[0].message.content.trim();
+            if (content.startsWith("```")) content = content.split("\n").slice(1, -1).join("\n");
+            try {
+                const r = JSON.parse(content.trim());
+                r.ok = true;
+                return r;
+            } catch (e) {}
+        }
+        return {
+            ok: true,
+            title: speechText.slice(0, 10) || "缇庡ソ鐨勪竴澶?,
+            subtitle: "浠婂ぉ鐨勭編濂藉洖蹇?,
+            captions: [speechText.slice(0, 10) || "鏃跺厜缂撶紦娴佹穼", "杩欎竴鍒诲€煎緱鐝嶈棌", "鎰垮瞾鏈堟俯鏌斾互寰?],
+            music: musicMap[style] || "classical"
+        };
+    }
+};
+
+</script>
+<script>
+// ============================================
+// Canvas 瑙嗛鍚堟垚 + MediaRecorder 褰曞埗
+// ============================================
+
+let videoAnimId = null;
+let videoStartTime = 0;
+let isVideoPlaying = false;
+let currentMusicGen = null;
+
+async function initVideo() {
+    const playBtn = document.getElementById("playBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const shareBtn = document.getElementById("shareBtn");
+
+    playBtn.addEventListener("click", toggleVideoPlay);
+    downloadBtn.addEventListener("click", downloadVideo);
+    shareBtn.addEventListener("click", async () => {
+        if (!window.navigator.share) {
+            toast("璇峰厛鐐广€屼繚瀛樺埌鎵嬫満銆嶏紝鍐嶅埌鐩稿唽鍒嗕韩缁欏浜猴綖");
+            return;
+        }
+        toast("璇峰厛鐐广€屼繚瀛樺埌鎵嬫満銆嶏紝鍐嶄粠鐩稿唽鍒嗕韩缁欏浜哄惂锝?);
+    });
+
+    // 闅愯棌褰曢煶闊抽鍏冪礌锛岀敤浜庢挱鏀剧敤鎴峰師澹?    const recPlayer = document.getElementById("recordingPlayer");
+    recPlayer.volume = 0.7;
+}
+
+async function toggleVideoPlay() {
+    const playBtn = document.getElementById("playBtn");
+    const canvas = document.getElementById("videoCanvas");
+
+    if (isVideoPlaying) {
+        stopVideoPlayback();
+        playBtn.textContent = "鈻讹笍 鎾斁瑙嗛";
+        return;
+    }
+
+    // 鍚姩闊充箰
+    if (currentMusicGen) {
+        currentMusicGen.stop();
+    }
+    const musicStyle = AppState.aiContent?.music || "classical";
+    currentMusicGen = new MusicGenerator(musicStyle, 12);
+    await currentMusicGen.start();
+
+    // 濡傛灉鏈夊綍闊筹紝涔熸挱鏀惧師澹?    const recPlayer = document.getElementById("recordingPlayer");
+    if (AppState.speechBlob) {
+        recPlayer.src = URL.createObjectURL(AppState.speechBlob);
+        try { await recPlayer.play(); } catch (e) {}
+    }
+
+    // 鍚姩 Canvas 鍔ㄧ敾
+    isVideoPlaying = true;
+    videoStartTime = performance.now();
+    animateVideo();
+    playBtn.textContent = "鈴革笍 鏆傚仠";
+}
+
+function stopVideoPlayback() {
+    isVideoPlaying = false;
+    if (videoAnimId) cancelAnimationFrame(videoAnimId);
+    videoAnimId = null;
+    if (currentMusicGen) {
+        currentMusicGen.stop();
+        currentMusicGen = null;
+    }
+    const recPlayer = document.getElementById("recordingPlayer");
+    try { recPlayer.pause(); } catch (e) {}
+    document.getElementById("playBtn").textContent = "鈻讹笍 鎾斁瑙嗛";
+}
+
+function animateVideo() {
+    if (!isVideoPlaying) return;
+    const canvas = document.getElementById("videoCanvas");
+    const ctx = canvas.getContext("2d");
+    const elapsed = (performance.now() - videoStartTime) / 1000;
+    const totalDuration = 12;
+
+    renderFrame(ctx, canvas, elapsed, totalDuration);
+
+    if (elapsed < totalDuration + 0.5) {
+        videoAnimId = requestAnimationFrame(animateVideo);
+    } else {
+        // 瑙嗛缁撴潫锛岃嚜鍔ㄥ洖鏀?        stopVideoPlayback();
+        setTimeout(() => {
+            // 鍥炲埌鍒濆鐘舵€?            drawFirstFrame();
+        }, 300);
+    }
+}
+
+function drawFirstFrame() {
+    const canvas = document.getElementById("videoCanvas");
+    const ctx = canvas.getContext("2d");
+    renderFrame(ctx, canvas, 0, 12);
+}
+
+// 娓叉煋鍗曞抚锛氳儗鏅笎鍙樿壊 + Ken Burns 鍥剧墖 + 澶у瓧瀛楀箷
+function renderFrame(ctx, canvas, elapsed, totalDuration) {
+    const W = canvas.width;
+    const H = canvas.height;
+    const style = AppState.selectedStyle || "鏂囪壓";
+
+    // === 1. 娓愬彉鑳屾櫙 ===
+    const bgColors = {
+        "鏂囪壓": ["#fce4ec", "#f8bbd9"],
+        "鍠滃簡": ["#ffe0b2", "#ff7043"],
+        "缇庝附": ["#e1f5fe", "#4fc3f7"],
+        "鎬€鏃?: ["#efebe9", "#a1887f"]
+    };
+    const colors = bgColors[style] || bgColors["鏂囪壓"];
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, colors[0]);
+    grad.addColorStop(1, colors[1]);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // === 2. Ken Burns 鏁堟灉锛堝浘鐗囨參鎱㈡斁澶?骞崇Щ锛?===
+    const img = AppState._videoImage || null;
+    if (img) {
+        const imgAspect = img.width / img.height;
+        const canvasAspect = W / H;
+
+        // Ken Burns: 浠?scale=1.0 鍒?scale=1.15
+        const progress = elapsed / totalDuration;
+        const scale = 1.0 + 0.15 * progress;
+
+        // 杞诲井骞崇Щ
+        const tx = Math.sin(progress * Math.PI * 2) * 20;
+        const ty = Math.cos(progress * Math.PI * 2) * 15;
+
+        // 璁＄畻缁樺埗灏哄锛坈over 妯″紡锛?        let drawW, drawH, offsetX, offsetY;
+        if (imgAspect > canvasAspect) {
+            drawH = H * scale;
+            drawW = drawH * imgAspect;
+            offsetX = (W - drawW) / 2 + tx;
+            offsetY = (H - drawH) / 2 + ty;
+        } else {
+            drawW = W * scale;
+            drawH = drawW / imgAspect;
+            offsetX = (W - drawW) / 2 + tx;
+            offsetY = (H - drawH) / 2 + ty;
+        }
+
+        // 缁樺埗鍥剧墖
+        ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+
+        // 鍔犲崐閫忔槑閬僵锛岃瀛楀箷鏇存竻鏅?        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        ctx.fillRect(0, 0, W, H);
+    } else {
+        // 娌″浘鐗囨椂鐢昏楗?        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        for (let i = 0; i < 5; i++) {
+            ctx.beginPath();
+            ctx.arc(W * (0.15 + i * 0.2), H * 0.4, 40 + i * 20, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // === 3. 鏍囬 ===
+    const content = AppState.aiContent || {};
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // 鍓爣棰橈紙椤堕儴锛?    if (content.subtitle) {
+        ctx.font = "bold 32px 'Microsoft YaHei', sans-serif";
+        ctx.shadowColor = "rgba(0,0,0,0.8)";
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 2;
+        ctx.fillText(content.subtitle, W / 2, 100);
+    }
+
+    // 涓绘爣棰?    if (content.title) {
+        ctx.font = "bold 52px 'Microsoft YaHei', sans-serif";
+        ctx.shadowColor = "rgba(0,0,0,0.9)";
+        ctx.shadowBlur = 12;
+        ctx.fillText(content.title, W / 2, 160);
+    }
+
+    // === 4. 瀛楀箷鐭彞锛堝垎闃舵鏄剧ず锛?===
+    const captions = content.captions || [];
+    if (captions.length > 0) {
+        const captionDuration = totalDuration / captions.length;
+        const captionIdx = Math.min(Math.floor(elapsed / captionDuration), captions.length - 1);
+        const caption = captions[captionIdx];
+
+        // 搴曢儴瀛楀箷妗嗭紙鍗婇€忔槑榛戝簳锛?        ctx.shadowBlur = 0;
+        const boxW = W - 80;
+        const boxH = 120;
+        const boxX = 40;
+        const boxY = H - boxH - 80;
+        roundRect(ctx, boxX, boxY, boxW, boxH, 20);
+        ctx.fillStyle = "rgba(0,0,0,0.55)";
+        ctx.fill();
+
+        ctx.fillStyle = "white";
+        ctx.font = "bold 46px 'Microsoft YaHei', sans-serif";
+        ctx.shadowColor = "rgba(0,0,0,0.5)";
+        ctx.shadowBlur = 6;
+        wrapText(ctx, caption, W / 2, boxY + boxH / 2, boxW - 20, 58);
+    }
+
+    // === 5. 椋庢牸瑙掓爣 ===
+    ctx.shadowBlur = 0;
+    ctx.font = "24px 'Microsoft YaHei', sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.textAlign = "left";
+    ctx.fillText("馃寘 鏃跺厜璁板繂", 30, H - 30);
+
+    // === 6. 杩涘害鏉?===
+    const barW = W - 80;
+    const barX = 40;
+    const barY = 40;
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.fillRect(barX, barY, barW, 6);
+    ctx.fillStyle = "white";
+    ctx.fillRect(barX, barY, barW * Math.min(elapsed / totalDuration, 1), 6);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+function wrapText(ctx, text, centerX, centerY, maxWidth, lineHeight) {
+    // 绠€鍗曠殑鍗曟樉绀猴細濡傛灉鏂囧瓧涓嶉暱灏辩洿鎺ョ敾
+    if (ctx.measureText(text).width <= maxWidth) {
+        ctx.fillText(text, centerX, centerY);
+        return;
+    }
+    // 鍚﹀垯鎹㈣鏄剧ず
+    let line = "";
+    const lines = [];
+    for (let i = 0; i < text.length; i++) {
+        const testLine = line + text[i];
+        if (ctx.measureText(testLine).width > maxWidth && line.length > 0) {
+            lines.push(line);
+            line = text[i];
+        } else {
+            line = testLine;
+        }
+    }
+    if (line) lines.push(line);
+
+    const startY = centerY - (lines.length - 1) * lineHeight / 2;
+    lines.forEach((l, i) => {
+        ctx.fillText(l, centerX, startY + i * lineHeight);
+    });
+}
+
+// 棰勫姞杞界敤鎴风収鐗?async function loadVideoImage() {
+    if (!AppState.imageBase64) return null;
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            AppState._videoImage = img;
+            resolve(img);
+        };
+        img.onerror = () => resolve(null);
+        img.src = "data:image/jpeg;base64," + AppState.imageBase64;
+    });
+}
+
+// 涓嬭浇瑙嗛锛堢敤 MediaRecorder 褰曞埗 canvas锛?async function downloadVideo() {
+    const canvas = document.getElementById("videoCanvas");
+    if (!isVideoPlaying) {
+        toast("璇峰厛鎾斁瑙嗛鍝");
+        return;
+    }
+
+    toast("姝ｅ湪鐢熸垚瑙嗛鏂囦欢鈥?);
+    try {
+        const stream = canvas.captureStream(30);
+
+        // 娣诲姞褰曢煶闊宠建锛堝鏋滄湁锛?        if (AppState.speechBlob) {
+            const audioEl = new Audio();
+            audioEl.src = URL.createObjectURL(AppState.speechBlob);
+            audioEl.muted = false;
+            audioEl.play();
+            const audioStream = audioEl.captureStream();
+            audioStream.getAudioTracks().forEach(t => stream.addTrack(t));
+        }
+
+        // 閫夋嫨 MediaRecorder 鏀寔鐨勬牸寮?        const mimeTypes = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
+        let mimeType = "video/webm";
+        for (const t of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(t)) { mimeType = t; break; }
+        }
+
+        const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 3_000_000 });
+        const chunks = [];
+        recorder.ondataavailable = (e) => chunks.push(e.data);
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `鏃跺厜璁板繂_${new Date().toLocaleDateString("zh-CN").replace(/\//g, "-")}.webm`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast("淇濆瓨鎴愬姛锛佽鍒扮浉鍐屾煡鐪?馃帀");
+        };
+
+        recorder.start();
+        setTimeout(() => {
+            recorder.stop();
+        }, 12000);  // 褰曞埗12绉?
+    } catch (err) {
+        console.error("褰曞埗澶辫触锛?, err);
+        toast("瑙嗛褰曞埗澶辫触锛屼絾鍙互姝ｅ父鎾斁");
+    }
+}
+
+</script>
+<script>
+// ============================================
+// Web Audio API 鐢熸垚鑳屾櫙闊充箰锛堟牴鎹鏍硷級
+// 鐢熸垚绠€鍗曠殑閽㈢惔/姘戜箰椋庢牸鍜屽鸡鏃嬪緥锛岄伩鍏嶄緷璧栧閮ㄩ煶棰戞枃浠?// ============================================
+
+// 椋庢牸瀵瑰簲鐨勭畝鍗曞拰寮﹁繘琛?const STYLE_CHORDS = {
+    classical: {
+        name: "鍙ゅ吀",
+        bpm: 60,
+        chords: [
+            ["C4", "E4", "G4"], ["G4", "B4", "D5"],
+            ["A4", "C5", "E5"], ["F4", "A4", "C5"],
+            ["C4", "E4", "G4"], ["G4", "B4", "D5"],
+            ["C5", "E5", "G5"], ["C5", "E5", "G5"]
+        ],
+        melody: ["C5", "E5", "G5", "E5", "C5", "G4", "E4", "C4"]
+    },
+    happy: {
+        name: "鍠滃簡",
+        bpm: 100,
+        chords: [
+            ["C4", "E4", "G4"], ["F4", "A4", "C5"],
+            ["G4", "B4", "D5"], ["C4", "E4", "G4"],
+            ["F4", "A4", "C5"], ["G4", "B4", "D5"],
+            ["C4", "E4", "G4"], ["C5", "E5", "G5"]
+        ],
+        melody: ["C5", "D5", "E5", "G5", "E5", "D5", "C5", "A4"]
+    },
+    nature: {
+        name: "缇庝附",
+        bpm: 55,
+        chords: [
+            ["D4", "F#4", "A4"], ["G4", "B4", "D5"],
+            ["A4", "C5", "E5"], ["D4", "F#4", "A4"],
+            ["F#4", "A4", "C#5"], ["B4", "D5", "F#5"],
+            ["D5", "F#5", "A5"], ["D5", "F#5", "A5"]
+        ],
+        melody: ["D5", "F#5", "A5", "F#5", "D5", "B4", "F#4", "D4"]
+    },
+    nostalgia: {
+        name: "鎬€鏃?,
+        bpm: 50,
+        chords: [
+            ["Am", "C", "E"], ["G", "B", "D"],
+            ["F", "A", "C"], ["E", "G#", "B"],
+            ["Am", "C", "E"], ["Dm", "F", "A"],
+            ["G", "B", "D"], ["Am", "C", "E"]
+        ],
+        melody: ["A4", "C5", "E5", "C5", "A4", "E4", "C4", "A3"]
+    }
+};
+
+// MIDI 闊崇杞鐜?const NOTE_FREQ = {
+    "C3": 130.81, "C#3": 138.59, "D3": 146.83, "D#3": 155.56,
+    "E3": 164.81, "F3": 174.61, "F#3": 185.00, "G3": 196.00,
+    "G#3": 207.65, "A3": 220.00, "A#3": 233.08, "B3": 246.94,
+    "C4": 261.63, "C#4": 277.18, "D4": 293.66, "D#4": 311.13,
+    "E4": 329.63, "F4": 349.23, "F#4": 369.99, "G4": 392.00,
+    "G#4": 415.30, "A4": 440.00, "A#4": 466.16, "B4": 493.88,
+    "C5": 523.25, "C#5": 554.37, "D5": 587.33, "D#5": 622.25,
+    "E5": 659.25, "F5": 698.46, "F#5": 739.99, "G5": 783.99,
+    "G#5": 830.61, "A5": 880.00, "A#5": 932.33, "B5": 987.77,
+    "C6": 1046.50,
+    // 绠€鍐欏拰寮﹀悕
+    "Am": 220.00, "C": 261.63, "E": 329.63, "G": 392.00,
+    "F": 349.23, "A": 440.00, "B": 493.88, "D": 293.66,
+};
+
+class MusicGenerator {
+    constructor(style = "classical", videoDuration = 15) {
+        this.style = style;
+        this.duration = videoDuration;
+        this.audioCtx = null;
+        this.nodes = [];
+    }
+
+    async start() {
+        if (this.audioCtx) return;
+        try {
+            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.warn("Web Audio 涓嶅彲鐢?);
+            return;
+        }
+        if (this.audioCtx.state === "suspended") {
+            await this.audioCtx.resume();
+        }
+        this.scheduleMusic();
+    }
+
+    stop() {
+        this.nodes.forEach(n => {
+            try { n.stop(); } catch (e) {}
+        });
+        this.nodes = [];
+    }
+
+    scheduleMusic() {
+        const ctx = this.audioCtx;
+        const style = STYLE_CHORDS[this.style] || STYLE_CHORDS.classical;
+        const beatDur = 60 / style.bpm;
+        const totalBeats = Math.ceil(this.duration / beatDur);
+
+        // 姣忎釜鍜屽鸡鎸佺画 2 鎷?        for (let i = 0; i < totalBeats; i += 2) {
+            const chordIdx = (i / 2) % style.chords.length;
+            const chord = style.chords[chordIdx];
+            const startT = ctx.currentTime + i * beatDur;
+            const endT = startT + beatDur * 2;
+
+            // 鎾斁鍜屽鸡锛堝垎瑙ｅ拰寮﹂鏍硷紝姣忎釜闊抽敊寮€涓€鐐癸級
+            chord.forEach((note, j) => {
+                const freq = NOTE_FREQ[note];
+                if (!freq) return;
+                const t = startT + j * 0.15;
+                this.playNote(freq, t, endT - t, 0.08);
+            });
+        }
+
+        // 鏃嬪緥锛堟瘡鎷嶄竴涓級
+        for (let i = 0; i < totalBeats; i++) {
+            const melIdx = i % style.melody.length;
+            const note = style.melody[melIdx];
+            const freq = NOTE_FREQ[note];
+            if (!freq) continue;
+            const t = ctx.currentTime + i * beatDur;
+            const dur = beatDur * 0.8;
+            this.playNote(freq, t, dur, 0.15);
+        }
+    }
+
+    playNote(freq, startTime, duration, volume) {
+        const ctx = this.audioCtx;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";  // 娓╂殩鐨勬寮︽尝
+        osc.frequency.value = freq;
+
+        // ADSR 鍖呯粶
+        const attack = 0.05;
+        const decay = 0.1;
+        const sustain = volume * 0.6;
+        const release = 0.3;
+
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(volume, startTime + attack);
+        gain.gain.linearRampToValueAtTime(sustain, startTime + attack + decay);
+        gain.gain.setValueAtTime(sustain, startTime + duration - release);
+        gain.gain.linearRampToValueAtTime(0, startTime + duration);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + duration + 0.1);
+
+        this.nodes.push(osc);
+    }
+}
+
+</script>
+<script>
+// ============================================
+// 椋庢牸閫夋嫨 + AI 璋冪敤 + 瑙嗛鐢熸垚涓绘祦绋?// ============================================
+
+function initStyleSelect() {
+    document.querySelectorAll(".style-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".style-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            AppState.selectedStyle = btn.dataset.style;
+
+            // 寮€濮?AI 澶勭悊
+            generateEverything();
+        });
+    });
+}
+
+async function generateEverything() {
+    try {
+        // 杩涘叆"鐢熸垚涓?椤甸潰
+        goStep(3.5);
+
+        const hint = document.getElementById("generateHint");
+
+        // Step 1: 鍥剧墖璇嗗埆
+        hint.textContent = "馃摲 姝ｅ湪璇嗗埆鐓х墖閲岀殑鍐呭鈥?;
+        let imageDesc = "鐢ㄦ埛鐨勭敓娲绘棩甯?;
+        try {
+            const r = await API.analyzeImage(AppState.imageBase64);
+            imageDesc = r.description || imageDesc;
+        } catch (e) {
+            console.warn("鍥剧墖璇嗗埆澶辫触锛堝厹搴曪級锛?, e);
+        }
+        AppState.imageDesc = imageDesc;
+
+        // Step 2: 鐢熸垚鏂囨/瀛楀箷
+        hint.textContent = "鉁嶏笍 姝ｅ湪涓轰綘娑﹁壊鎴愭俯鏆栫殑鏃ヨ鈥?;
+        let aiContent;
+        try {
+            aiContent = await API.generateContent(
+                imageDesc,
+                AppState.speechText,
+                AppState.selectedStyle
+            );
+        } catch (e) {
+            console.warn("鏂囨鐢熸垚澶辫触锛堝厹搴曪級锛?, e);
+            aiContent = {
+                ok: true,
+                title: AppState.speechText?.slice(0, 10) || "缇庡ソ鍥炲繂",
+                subtitle: "浠婂ぉ鐨勬俯鏆栬褰?,
+                captions: ["鏃跺厜缂撶紦娴佹穼", "杩欎竴鍒诲€煎緱鐝嶈棌", "鎰垮瞾鏈堟俯鏌斾互寰?],
+                music: "classical"
+            };
+        }
+        AppState.aiContent = aiContent;
+
+        // Step 3: 棰勫姞杞界収鐗囧埌 canvas
+        hint.textContent = "馃幀 姝ｅ湪鍚堟垚瑙嗛鐢婚潰鈥?;
+        await loadVideoImage();
+
+        // Step 4: 鏄剧ず鏍囬淇℃伅
+        document.getElementById("videoTitle").textContent = aiContent.title || "缇庡ソ鍥炲繂";
+        document.getElementById("videoSubtitle").textContent = aiContent.subtitle || "";
+
+        // Step 5: 鍒囨崲鍒拌棰戦〉闈紝缁樺埗绗竴甯?        goStep(4);
+        drawFirstFrame();
+
+        toast("鍋氬ソ鍟︼紒鐐瑰嚮鈻讹笍鎾斁鐪嬬湅~");
+
+    } catch (err) {
+        console.error("鐢熸垚澶辫触锛?, err);
+        toast("鍑轰簡鐐归棶棰橈紝璇曡瘯閲嶆柊鏉ヤ竴娆★紵");
+        goStep(1);
+    }
+}
+
+</script>
+
+
+
+</body></html>
