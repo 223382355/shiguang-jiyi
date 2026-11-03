@@ -2021,7 +2021,7 @@ function makeFilename(ext) {
     const d = new Date();
     const p = n => String(n).padStart(2, "0");
     const suffix = ext || "webm";
-    return `时光记忆_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.${suffix}`;
+    return `shiguangjiyi_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.${suffix}`;
 }
 
 function triggerDownload(blob, filename) {
@@ -2150,13 +2150,13 @@ async function saveToPhone() {
             return;
         }
 
-        // 安卓：先把视频下载到「文件/下载」，同时弹出海报让用户长按存相册
+        // 安卓：视频存进「下载」目录，同时弹海报让用户长按存相册
         triggerDownload(blob, filename);
         const poster = await canvasPosterBlob().catch(() => null);
         if (poster) {
-            showPosterOverlay(poster, "视频已存到「文件管理 → 下载」；长按上面这张海报可直接存进相册");
+            showPosterOverlay(poster, `视频已存到「文件管理 → Download」，文件名：${filename}；长按上面海报可直接存相册`);
         } else {
-            toast("视频已存到「文件/下载」，可在相册里用「导入」打开");
+            toast(`已存到「Download」：${filename}`);
         }
 
     } catch (err) {
