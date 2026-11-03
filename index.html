@@ -396,10 +396,20 @@ button:active {
 }
 
 .style-btn.selected {
-    border-color: #ff6b6b;
-    background: #fff5f5;
-    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
+    border-color: #ffd54f;
+    transform: translateY(-3px);
+    box-shadow: 0 0 0 5px rgba(255, 213, 79, 0.85), 0 8px 26px rgba(0, 0, 0, 0.22);
 }
+
+/* 四个风格的"缩略图"配色，一眼可辨 */
+.style-btn[data-style="文艺"] { background: linear-gradient(160deg, #ffeaf3 0%, #f6c7dd 100%); }
+.style-btn[data-style="文艺"] .style-name { color: #7d4a5e; }
+.style-btn[data-style="喜庆"] { background: linear-gradient(160deg, #ffab91 0%, #e53935 100%); }
+.style-btn[data-style="喜庆"] .style-name { color: #fff8e1; }
+.style-btn[data-style="美丽"] { background: linear-gradient(160deg, #b3e5fc 0%, #039be5 100%); }
+.style-btn[data-style="美丽"] .style-name { color: #ffffff; }
+.style-btn[data-style="怀旧"] { background: linear-gradient(160deg, #f3e5d0 0%, #c9ac81 100%); }
+.style-btn[data-style="怀旧"] .style-name { color: #4e342e; }
 
 .style-emoji {
     font-size: 50px;
@@ -1676,11 +1686,30 @@ function renderFrame(ctx, canvas, elapsed, totalDuration) {
             offsetY = (H - drawH) / 2 + ty;
         }
 
-        // 绘制图片
+        // 绘制图片（按风格做不同色调）
+        const filters = {
+            "文艺": "saturate(0.85) brightness(1.06) contrast(0.98)",
+            "喜庆": "saturate(1.35) contrast(1.08) brightness(1.04)",
+            "美丽": "saturate(1.25) brightness(1.05) contrast(1.02)",
+            "怀旧": "sepia(0.55) saturate(0.75) contrast(1.05)"
+        };
+        ctx.save();
+        try { ctx.filter = filters[style] || "none"; } catch (e) {}
         ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+        ctx.restore();
 
-        // 加半透明遮罩，让字幕更清晰
-        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        // 风格化色调叠加（四种风格肉眼可见地不同）
+        const tints = {
+            "文艺": "rgba(255,170,200,0.26)",
+            "喜庆": "rgba(255,96,0,0.24)",
+            "美丽": "rgba(64,190,255,0.22)",
+            "怀旧": "rgba(92,58,28,0.32)"
+        };
+        ctx.fillStyle = tints[style] || "rgba(0,0,0,0.2)";
+        ctx.fillRect(0, 0, W, H);
+
+        // 压暗一点，让字幕清晰
+        ctx.fillStyle = "rgba(0,0,0,0.18)";
         ctx.fillRect(0, 0, W, H);
     } else {
         // 没图片时画装饰
@@ -1692,27 +1721,57 @@ function renderFrame(ctx, canvas, elapsed, totalDuration) {
         }
     }
 
-    // === 3. 标题 ===
+    // === 2.5 风格专属装饰 ===
+    drawStyleDecor(ctx, W, H, style, elapsed);
+
+    // === 3. 标题（按风格换字体、配色与装饰） ===
     const content = AppState.aiContent || {};
-    ctx.fillStyle = "white";
+    const TITLE_STYLE = {
+        "文艺": { font: "bold 54px 'STKaiti','KaiTi','Songti SC',serif", sub: "26px 'STKaiti','KaiTi','Songti SC',serif", color: "#ffffff", accent: "rgba(255,182,193,0.95)" },
+        "喜庆": { font: "bold 58px 'Microsoft YaHei',sans-serif", sub: "bold 28px 'Microsoft YaHei',sans-serif", color: "#fff8e1", accent: "#ffd54f" },
+        "美丽": { font: "bold 54px 'Microsoft YaHei',sans-serif", sub: "26px 'Microsoft YaHei',sans-serif", color: "#ffffff", accent: "#4fc3f7" },
+        "怀旧": { font: "bold 52px 'STKaiti','KaiTi','Songti SC',serif", sub: "26px 'STKaiti','KaiTi','Songti SC',serif", color: "#fbe9d0", accent: "#d7b98e" }
+    };
+    const titleStyle = TITLE_STYLE[style] || TITLE_STYLE["文艺"];
+
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
     // 副标题（顶部）
     if (content.subtitle) {
-        ctx.font = "bold 32px 'Microsoft YaHei', sans-serif";
-        ctx.shadowColor = "rgba(0,0,0,0.8)";
-        ctx.shadowBlur = 10;
+        ctx.font = titleStyle.sub;
+        ctx.fillStyle = titleStyle.accent;
+        ctx.shadowColor = "rgba(0,0,0,0.75)";
+        ctx.shadowBlur = 8;
         ctx.shadowOffsetY = 2;
-        ctx.fillText(content.subtitle, W / 2, 100);
+        ctx.fillText(content.subtitle, W / 2, 96);
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
     }
 
     // 主标题
     if (content.title) {
-        ctx.font = "bold 52px 'Microsoft YaHei', sans-serif";
+        ctx.font = titleStyle.font;
+
+        if (style === "喜庆") {
+            const tw = Math.min(W - 90, ctx.measureText(content.title).width + 70);
+            const g = ctx.createLinearGradient(0, 118, 0, 204);
+            g.addColorStop(0, "rgba(198,40,40,0.92)");
+            g.addColorStop(1, "rgba(230,81,0,0.92)");
+            roundRect(ctx, (W - tw) / 2, 118, tw, 86, 24);
+            ctx.fillStyle = g;
+            ctx.fill();
+        }
+
+        ctx.fillStyle = titleStyle.color;
         ctx.shadowColor = "rgba(0,0,0,0.9)";
         ctx.shadowBlur = 12;
-        ctx.fillText(content.title, W / 2, 160);
+        ctx.fillText(content.title, W / 2, 161);
+        ctx.shadowBlur = 0;
+
+        // 标题下的小横线（每个风格颜色不同）
+        ctx.fillStyle = titleStyle.accent;
+        ctx.fillRect(W / 2 - 64, 206, 128, 5);
     }
 
     // === 4. 字幕短句（分阶段显示） ===
@@ -1722,22 +1781,34 @@ function renderFrame(ctx, canvas, elapsed, totalDuration) {
         const captionIdx = Math.min(Math.floor(elapsed / captionDuration), captions.length - 1);
         const caption = captions[captionIdx];
 
-        // 底部字幕框（半透明黑底）
+        // 底部字幕框（按风格换底色与文字颜色）
         ctx.shadowBlur = 0;
         const boxW = W - 80;
         const boxH = 120;
         const boxX = 40;
         const boxY = H - boxH - 80;
         roundRect(ctx, boxX, boxY, boxW, boxH, 20);
-        ctx.fillStyle = "rgba(0,0,0,0.55)";
+
+        const capTheme = style === "文艺"
+            ? { bg: "rgba(255,255,255,0.78)", color: "#6d4352", font: "bold 46px 'STKaiti','KaiTi',serif" }
+            : style === "怀旧"
+            ? { bg: "rgba(48,32,18,0.78)", color: "#f7e6c9", font: "bold 46px 'STKaiti','KaiTi',serif" }
+            : style === "喜庆"
+            ? { bg: "rgba(183,28,28,0.82)", color: "#fff8e1", font: "bold 46px 'Microsoft YaHei',sans-serif" }
+            : { bg: "rgba(0,80,120,0.62)", color: "#ffffff", font: "bold 46px 'Microsoft YaHei',sans-serif" };
+
+        ctx.fillStyle = capTheme.bg;
         ctx.fill();
 
-        ctx.fillStyle = "white";
-        ctx.font = "bold 46px 'Microsoft YaHei', sans-serif";
-        ctx.shadowColor = "rgba(0,0,0,0.5)";
+        ctx.fillStyle = capTheme.color;
+        ctx.font = capTheme.font;
+        ctx.shadowColor = "rgba(0,0,0,0.35)";
         ctx.shadowBlur = 6;
         wrapText(ctx, caption, W / 2, boxY + boxH / 2, boxW - 20, 58);
     }
+
+    // === 4.5 外框（风格专属） ===
+    drawStyleFrame(ctx, W, H, style);
 
     // === 5. 风格角标 ===
     ctx.shadowBlur = 0;
@@ -1754,6 +1825,138 @@ function renderFrame(ctx, canvas, elapsed, totalDuration) {
     ctx.fillRect(barX, barY, barW, 6);
     ctx.fillStyle = "white";
     ctx.fillRect(barX, barY, barW * Math.min(elapsed / totalDuration, 1), 6);
+}
+
+// 风格专属的浮动装饰（花瓣 / 金片 / 光斑 / 胶片划痕）
+function drawStyleDecor(ctx, W, H, style, elapsed) {
+    ctx.save();
+    const t = elapsed || 0;
+
+    if (style === "文艺") {
+        for (let i = 0; i < 26; i++) {
+            const seed = i * 37.2;
+            const x = W * (0.5 + 0.46 * Math.sin(seed + t * 0.18));
+            const y = H * (((seed * 0.13) + t * 0.045) % 1.1) - 20;
+            ctx.globalAlpha = 0.28 + 0.22 * Math.sin(t * 0.9 + i);
+            ctx.fillStyle = i % 3 === 0 ? "#ffd6e7" : "#fff0f5";
+            ctx.beginPath();
+            ctx.ellipse(x, y, 13, 7, Math.sin(seed) + t * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    } else if (style === "喜庆") {
+        for (let i = 0; i < 36; i++) {
+            const seed = i * 41.7;
+            const x = W * ((seed * 0.077) % 1);
+            const y = H * (((seed * 0.11) + t * 0.07) % 1.08) - 10;
+            ctx.globalAlpha = 0.9;
+            ctx.fillStyle = i % 2 ? "#ffd54f" : "#ff5252";
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate((seed + t * 1.2) % (Math.PI * 2));
+            ctx.fillRect(-6, -3, 12, 6);
+            ctx.restore();
+        }
+        const glow = ctx.createRadialGradient(W * 0.12, H * 0.18, 0, W * 0.12, H * 0.18, W * 0.55);
+        glow.addColorStop(0, "rgba(255,193,7,0.28)");
+        glow.addColorStop(1, "rgba(255,193,7,0)");
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, W, H);
+    } else if (style === "美丽") {
+        for (let i = 0; i < 16; i++) {
+            const seed = i * 29.3;
+            const x = W * (0.5 + 0.48 * Math.sin(seed + t * 0.12));
+            const y = H * (1 - ((seed * 0.09 + t * 0.035) % 1));
+            const r = 14 + (i % 5) * 9;
+            const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+            g.addColorStop(0, "rgba(255,255,255,0.6)");
+            g.addColorStop(1, "rgba(255,255,255,0)");
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 0.14;
+        for (let i = 0; i < 4; i++) {
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.moveTo(W * (0.12 + i * 0.24), 0);
+            ctx.lineTo(W * (0.26 + i * 0.24), 0);
+            ctx.lineTo(W * (0.48 + i * 0.24), H);
+            ctx.lineTo(W * (0.33 + i * 0.24), H);
+            ctx.closePath();
+            ctx.fill();
+        }
+    } else {
+        for (let i = 0; i < 9; i++) {
+            const x = W * ((i * 0.13 + 0.06) % 1);
+            const y = H * ((i * 0.17 + t * 0.02) % 0.9);
+            ctx.globalAlpha = 0.1;
+            ctx.fillStyle = "#ffe9c7";
+            ctx.fillRect(x, y, 2, 50 + (i % 3) * 30);
+        }
+        const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.78);
+        v.addColorStop(0, "rgba(0,0,0,0)");
+        v.addColorStop(1, "rgba(25,12,4,0.55)");
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = v;
+        ctx.fillRect(0, 0, W, H);
+    }
+
+    ctx.globalAlpha = 1;
+    ctx.restore();
+}
+
+// 风格专属外框
+function drawStyleFrame(ctx, W, H, style) {
+    ctx.save();
+    ctx.shadowBlur = 0;
+
+    if (style === "文艺") {
+        ctx.strokeStyle = "rgba(255,255,255,0.85)";
+        ctx.lineWidth = 10;
+        ctx.strokeRect(16, 16, W - 32, H - 32);
+        ctx.strokeStyle = "rgba(255,182,193,0.9)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(30, 30, W - 60, H - 60);
+        ctx.fillStyle = "rgba(255,182,193,0.95)";
+        [[46, 46], [W - 46, 46], [46, H - 46], [W - 46, H - 46]].forEach(([x, y]) => {
+            ctx.beginPath();
+            ctx.arc(x, y, 7, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    } else if (style === "喜庆") {
+        const g = ctx.createLinearGradient(0, 0, W, H);
+        g.addColorStop(0, "#ffd54f");
+        g.addColorStop(0.5, "#ffb300");
+        g.addColorStop(1, "#ff8f00");
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 16;
+        ctx.strokeRect(12, 12, W - 24, H - 24);
+        ctx.strokeStyle = "#c62828";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(28, 28, W - 56, H - 56);
+    } else if (style === "美丽") {
+        ctx.strokeStyle = "rgba(255,255,255,0.95)";
+        ctx.lineWidth = 6;
+        ctx.strokeRect(14, 14, W - 28, H - 28);
+        ctx.strokeStyle = "rgba(79,195,247,0.95)";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(26, 26, W - 52, H - 52);
+    } else {
+        ctx.fillStyle = "rgba(38,24,12,0.9)";
+        ctx.fillRect(0, 0, W, 44);
+        ctx.fillRect(0, H - 44, W, 44);
+        ctx.fillStyle = "rgba(250,235,205,0.8)";
+        const step = (W - 60) / 12;
+        for (let i = 0; i < 12; i++) {
+            const x = 30 + i * step;
+            ctx.fillRect(x, 12, 24, 20);
+            ctx.fillRect(x, H - 32, 24, 20);
+        }
+    }
+
+    ctx.restore();
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -1915,10 +2118,15 @@ function canvasPosterBlob() {
     });
 }
 
-async function savePoster() {
-    const blob = await canvasPosterBlob();
-    triggerDownload(blob, "时光记忆_海报.png");
-    toast("已保存一张海报 🖼️");
+// 优先交给系统分享面板（面板里选"保存到相册/保存图片"，就能进相册）
+async function shareFileOrDownload(blob, filename, hint) {
+    const file = new File([blob], filename, { type: blob.type });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: "时光记忆", text: hint });
+        return "shared";
+    }
+    triggerDownload(blob, filename);
+    return "downloaded";
 }
 
 function setBtnBusy(btn, busy, busyText) {
@@ -1943,27 +2151,32 @@ async function saveToPhone() {
     try {
         const blob = await recordVideoBlob();
         const filename = makeFilename(blob.type.indexOf("mp4") >= 0 ? "mp4" : "webm");
-        const file = new File([blob], filename, { type: blob.type });
-
-        // iPhone：系统分享面板里可以直接「存储到照片」
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: "时光记忆" });
-            toast("已保存 🎉");
-        } else {
-            triggerDownload(blob, filename);
-            toast("已保存到手机的「下载 / 文件」里 🎉");
-        }
+        const how = await shareFileOrDownload(blob, filename, "请选择「保存到相册 / 存储视频」");
+        toast(how === "shared"
+            ? "在系统面板里点「保存到相册」就存好了 🎉"
+            : "已下载到「文件/下载」，可在相册里用「导入」打开");
     } catch (err) {
+        if (err && err.name === "AbortError") return;   // 用户自己取消分享
         console.error("保存失败：", err);
+
         if (err.message === "NO_SUPPORT" || err.message === "EMPTY") {
-            try {
-                const poster = await canvasPosterBlob();
-                if (isInAppBrowser()) showPosterOverlay(poster);
-                else await savePoster();
-            } catch (e) {
+            const poster = await canvasPosterBlob().catch(() => null);
+            if (!poster) {
                 toast("保存失败，请换 Chrome 再试");
+                return;
             }
+
+            // 不支持录视频的设备：把海报图交给系统相册
+            try {
+                const how = await shareFileOrDownload(poster, "时光记忆_海报.png", "请选择「保存图片」即可存进相册");
+                if (how === "shared") {
+                    toast("在系统面板里点「保存图片」即可 🎉");
+                    return;
+                }
+            } catch (e) {
+                if (e && e.name === "AbortError") return;
+            }
+            if (isInAppBrowser()) showPosterOverlay(poster);
         } else {
             toast("保存没成功，请再点一次");
         }
