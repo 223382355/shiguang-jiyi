@@ -678,6 +678,54 @@ button:active {
     line-height: 1;
 }
 
+/* 分享面板 */
+.share-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px 20px;
+    width: 86vw;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+}
+.share-card h3 {
+    margin: 0;
+    font-size: 26px;
+    color: #2e7d32;
+}
+.share-card p {
+    color: #444;
+    font-size: 17px;
+    margin: 0;
+}
+.share-card .share-text {
+    background: #f5f7f6;
+    border-radius: 12px;
+    padding: 12px;
+    line-height: 1.5;
+}
+.share-card p.tip {
+    color: #888;
+    font-size: 14px;
+}
+.share-card button {
+    min-height: 62px;
+    border: none;
+    border-radius: 14px;
+    font-size: 20px;
+    font-weight: 700;
+}
+.share-card .btn-copy {
+    background: #2e7d32;
+    color: #fff;
+}
+.share-card .btn-save {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
 /* ============== 响应式 ============== */
 @media (max-width: 380px) {
     html, body { font-size: 20px; }
@@ -1010,6 +1058,55 @@ function showPosterOverlay(blob, videoHint) {
     mask.appendChild(img);
     mask.appendChild(tip);
     mask.appendChild(tip2);
+    document.body.appendChild(mask);
+}
+
+// 浏览器不支持系统分享时，给一个看得见的"分享面板"
+function showSharePanel(text, blob, filename) {
+    const mask = document.createElement("div");
+    mask.className = "poster-mask";
+
+    const card = document.createElement("div");
+    card.className = "share-card";
+
+    const h = document.createElement("h3");
+    h.textContent = "分享给家人";
+
+    const p = document.createElement("p");
+    p.className = "share-text";
+    p.textContent = text;
+
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "btn-copy";
+    copyBtn.textContent = "📋 复制这段文字";
+    copyBtn.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(text);
+            toast("已复制，去微信粘贴给家人吧");
+        } catch (e) {
+            toast("复制失败，请长按文字手动复制");
+        }
+    });
+
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "btn-save";
+    saveBtn.textContent = "⬇️ 保存视频文件";
+    saveBtn.addEventListener("click", () => {
+        triggerDownload(blob, filename);
+        toast("已存到 Download，可在微信里选「文件」发送");
+    });
+
+    const tip = document.createElement("p");
+    tip.className = "tip";
+    tip.textContent = "此浏览器不支持一键分享：复制文字 + 从「下载」里选视频发给家人";
+
+    const close = document.createElement("button");
+    close.className = "poster-close";
+    close.textContent = "✕";
+    close.addEventListener("click", () => mask.remove());
+
+    card.append(h, p, copyBtn, saveBtn, tip);
+    mask.append(card, close);
     document.body.appendChild(mask);
 }
 
@@ -2207,17 +2304,22 @@ async function shareToFamily() {
 
         // 其次：分享文字 + 链接
         if (navigator.share) {
-            await navigator.share({
-                title: "时光记忆 · 家庭多媒体日记",
-                text: shareText,
-                url: location.href
-            });
-            return;
+            try {
+                await navigator.share({
+                    title: "时光记忆 · 家庭多媒体日记",
+                    text: shareText,
+                    url: location.href
+                });
+                toast("已分享 🎉");
+                return;
+            } catch (e) {
+                if (e && e.name === "AbortError") return;
+            }
         }
 
-        // 桌面浏览器：退化成下载
-        triggerDownload(blob, file.name);
-        toast("已存到下载文件夹，可以拖进微信发给家人");
+        // 最后：显示"分享面板"，复制文字 + 保存视频
+        showSharePanel(shareText, blob, file.name);
+        return;
     } catch (err) {
         if (err && err.name === "AbortError") return;   // 用户自己取消，不打扰
         console.error("分享失败：", err);
