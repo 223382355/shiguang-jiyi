@@ -982,7 +982,7 @@ function initInAppBanner() {
 }
 
 // 长按保存海报（应用内浏览器里唯一可靠的方式）
-function showPosterOverlay(blob) {
+function showPosterOverlay(blob, videoHint) {
     const url = URL.createObjectURL(blob);
     const mask = document.createElement("div");
     mask.className = "poster-mask";
@@ -996,7 +996,7 @@ function showPosterOverlay(blob) {
 
     const tip2 = document.createElement("p");
     tip2.className = "tip";
-    tip2.textContent = "想保存视频？请点右上角「…」→ 在浏览器打开";
+    tip2.textContent = videoHint || "想保存视频？请点右上角「…」→ 在浏览器打开";
 
     const close = document.createElement("button");
     close.className = "poster-close";
@@ -2118,17 +2118,6 @@ function canvasPosterBlob() {
     });
 }
 
-// 优先交给系统分享面板（面板里选"保存到相册/保存图片"，就能进相册）
-async function shareFileOrDownload(blob, filename, hint) {
-    const file = new File([blob], filename, { type: blob.type });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: "时光记忆", text: hint });
-        return "shared";
-    }
-    triggerDownload(blob, filename);
-    return "downloaded";
-}
-
 function setBtnBusy(btn, busy, busyText) {
     const label = btn.querySelector(".btn-text");
     if (busy) {
@@ -2151,10 +2140,25 @@ async function saveToPhone() {
     try {
         const blob = await recordVideoBlob();
         const filename = makeFilename(blob.type.indexOf("mp4") >= 0 ? "mp4" : "webm");
-        const how = await shareFileOrDownload(blob, filename, "请选择「保存到相册 / 存储视频」");
-        toast(how === "shared"
-            ? "在系统面板里点「保存到相册」就存好了 🎉"
-            : "已下载到「文件/下载」，可在相册里用「导入」打开");
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const file = new File([blob], filename, { type: blob.type });
+
+        if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) {
+            // iPhone：系统面板里有「存储视频 / 存储到照片」
+            await navigator.share({ files: [file], title: "时光记忆" });
+            toast("已存入「照片」🎉");
+            return;
+        }
+
+        // 安卓：先把视频下载到「文件/下载」，同时弹出海报让用户长按存相册
+        triggerDownload(blob, filename);
+        const poster = await canvasPosterBlob().catch(() => null);
+        if (poster) {
+            showPosterOverlay(poster, "视频已存到「文件管理 → 下载」；长按上面这张海报可直接存进相册");
+        } else {
+            toast("视频已存到「文件/下载」，可在相册里用「导入」打开");
+        }
+
     } catch (err) {
         if (err && err.name === "AbortError") return;   // 用户自己取消分享
         console.error("保存失败：", err);
@@ -2165,18 +2169,10 @@ async function saveToPhone() {
                 toast("保存失败，请换 Chrome 再试");
                 return;
             }
-
-            // 不支持录视频的设备：把海报图交给系统相册
-            try {
-                const how = await shareFileOrDownload(poster, "时光记忆_海报.png", "请选择「保存图片」即可存进相册");
-                if (how === "shared") {
-                    toast("在系统面板里点「保存图片」即可 🎉");
-                    return;
-                }
-            } catch (e) {
-                if (e && e.name === "AbortError") return;
-            }
-            if (isInAppBrowser()) showPosterOverlay(poster);
+            showPosterOverlay(
+                poster,
+                "当前浏览器不支持录制视频，已改为保存海报；长按上面图片即可存进相册（用 Chrome 可录视频）"
+            );
         } else {
             toast("保存没成功，请再点一次");
         }
