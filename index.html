@@ -1090,22 +1090,47 @@ function showSharePanel(text, blob, filename) {
 
     const saveBtn = document.createElement("button");
     saveBtn.className = "btn-save";
-    saveBtn.textContent = "⬇️ 保存视频文件";
+    const isImage = blob.type && blob.type.indexOf("image") === 0;
+    saveBtn.textContent = isImage ? "⬇️ 保存海报图片" : "⬇️ 保存视频文件";
     saveBtn.addEventListener("click", () => {
         triggerDownload(blob, filename);
-        toast("已存到 Download，可在微信里选「文件」发送");
+        toast("已保存，可在微信里从「文件/相册」发送");
     });
+
+    // 让用户自己从相册挑一个视频来分享（网页无权读取相册，但可以请用户选）
+    const pickBtn = document.createElement("button");
+    pickBtn.className = "btn-save";
+    pickBtn.textContent = "📁 从相册选视频分享";
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "video/*";
+    fileInput.style.display = "none";
+    fileInput.addEventListener("change", async () => {
+        const picked = fileInput.files && fileInput.files[0];
+        if (!picked) return;
+        if (navigator.canShare && navigator.canShare({ files: [picked] })) {
+            try {
+                await navigator.share({ files: [picked], title: "时光记忆" });
+                toast("已分享 🎉");
+            } catch (e) {
+                if (e && e.name !== "AbortError") toast("分享失败，可直接用微信发送");
+            }
+        } else {
+            toast("这个浏览器不支持分享文件，请打开微信手动发送");
+        }
+    });
+    pickBtn.addEventListener("click", () => fileInput.click());
 
     const tip = document.createElement("p");
     tip.className = "tip";
-    tip.textContent = "此浏览器不支持一键分享：复制文字 + 从「下载」里选视频发给家人";
+    tip.textContent = "网页不能读取相册，需你手动选一次视频；或复制文字后到微信粘贴";
 
     const close = document.createElement("button");
     close.className = "poster-close";
     close.textContent = "✕";
     close.addEventListener("click", () => mask.remove());
 
-    card.append(h, p, copyBtn, saveBtn, tip);
+    card.append(h, p, copyBtn, pickBtn, saveBtn, tip, fileInput);
     mask.append(card, close);
     document.body.appendChild(mask);
 }
@@ -2340,7 +2365,14 @@ async function shareToFamily() {
             } catch (e) {}
             toast("这个浏览器不支持直接分享，请用手机 Chrome / Safari");
         } else {
-            toast("分享没成功，可以先「保存到手机」再发");
+            // 录制失败也不要死路：弹分享面板，让用户复制文案 / 从相册选视频
+            const poster = await canvasPosterBlob().catch(() => null);
+            if (poster) {
+                showSharePanel(shareText, poster, "shiguangjiyi_海报.png");
+            } else {
+                showSharePanel(shareText, new Blob([""], { type: "text/plain" }), "shiguangjiyi.txt");
+            }
+            toast("视频没录成功，可复制文案、或从相册选视频分享");
         }
     } finally {
         setBtnBusy(btn, false);
