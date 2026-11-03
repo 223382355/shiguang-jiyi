@@ -1063,6 +1063,7 @@ function showPosterOverlay(blob, videoHint) {
 
 // 分享面板：任何时候点「分享给家人」都会看到它
 function showSharePanel(text) {
+    const canShareFile = !!(navigator.canShare && navigator.share);
     const mask = document.createElement("div");
     mask.className = "poster-mask";
 
@@ -1076,44 +1077,69 @@ function showSharePanel(text) {
     p.className = "share-text";
     p.textContent = text;
 
+    // 1. 复制文字（所有浏览器都可用）
     const copyBtn = document.createElement("button");
     copyBtn.className = "btn-copy";
-    copyBtn.textContent = "\ud83d\udccb 复制这段文字";
-    copyBtn.addEventListener("click", async () => {
+    copyBtn.textContent = "📋 复制这段文字";
+    const copyText = async () => {
         try {
             await navigator.clipboard.writeText(text);
-            toast("已复制，去微信粘贴给家人吧");
+            return true;
         } catch (e) {
-            toast("复制失败，请长按文字手动复制");
+            const tmp = document.createElement("textarea");
+            tmp.value = text;
+            document.body.appendChild(tmp);
+            tmp.select();
+            try { document.execCommand("copy"); } catch (e2) {}
+            tmp.remove();
+            return false;
         }
+    };
+    copyBtn.addEventListener("click", async () => {
+        await copyText();
+        toast("已复制，去微信粘贴给家人吧");
     });
 
-    const pickBtn = document.createElement("button");
-    pickBtn.className = "btn-save";
-    pickBtn.textContent = "\ud83d\udcc1 从相册选视频分享";
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = "video/*";
-    fileInput.style.display = "none";
-    fileInput.addEventListener("change", async () => {
-        const picked = fileInput.files && fileInput.files[0];
-        if (!picked) return;
-        if (navigator.canShare && navigator.canShare({ files: [picked] })) {
+    const buttons = [copyBtn];
+
+    // 2. 能调系统分享时，才显示"从相册选视频"
+    if (canShareFile) {
+        const pickBtn = document.createElement("button");
+        pickBtn.className = "btn-save";
+        pickBtn.textContent = "📁 从相册选视频分享";
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "video/*";
+        fileInput.style.display = "none";
+        fileInput.addEventListener("change", async () => {
+            const picked = fileInput.files && fileInput.files[0];
+            if (!picked) return;
             try {
                 await navigator.share({ files: [picked], title: "时光记忆" });
-                toast("已分享 \ud83c\udf89");
+                toast("已分享 🎉");
             } catch (e) {
-                if (e && e.name !== "AbortError") toast("分享失败，可直接用微信发送");
+                if (e && e.name !== "AbortError") toast("分享已取消或失败");
             }
-        } else {
-            toast("这个浏览器不支持分享文件，请打开微信手动发送");
-        }
-    });
-    pickBtn.addEventListener("click", () => fileInput.click());
+        });
+        pickBtn.addEventListener("click", () => fileInput.click());
+        buttons.push(pickBtn, fileInput);
+    } else {
+        // 浏览器不支持分享：直接引导去微信
+        const wxBtn = document.createElement("button");
+        wxBtn.className = "btn-save";
+        wxBtn.textContent = "📲 复制文字并打开微信";
+        wxBtn.addEventListener("click", async () => {
+            await copyText();
+            toast("文字已复制，在微信里粘贴给家人");
+            setTimeout(() => { location.href = "weixin://"; }, 600);
+        });
+        buttons.push(wxBtn);
+    }
 
+    // 3. 生成视频
     const genBtn = document.createElement("button");
-    genBtn.className = "btn-copy";
-    genBtn.textContent = "\ud83c\udfac 生成视频并分享";
+    genBtn.className = canShareFile ? "btn-copy" : "btn-save";
+    genBtn.textContent = canShareFile ? "🎬 生成视频并分享" : "🎬 生成视频并保存";
     genBtn.addEventListener("click", async () => {
         genBtn.disabled = true;
         const old = genBtn.textContent;
@@ -1122,12 +1148,12 @@ function showSharePanel(text) {
             const blob = await recordVideoBlob();
             const filename = makeFilename(blob.type.indexOf("mp4") >= 0 ? "mp4" : "webm");
             const file = new File([blob], filename, { type: blob.type });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            if (canShareFile && navigator.canShare({ files: [file] })) {
                 await navigator.share({ files: [file], title: "时光记忆", text: text });
-                toast("已分享 \ud83c\udf89");
+                toast("已分享 🎉");
             } else {
                 triggerDownload(blob, filename);
-                toast("此浏览器不能直接分享，视频已存到 Download；可去微信发送");
+                toast("视频已存到 Download，可在微信里选「文件」发送");
             }
         } catch (err) {
             if (err && err.name === "AbortError") return;
@@ -1144,17 +1170,21 @@ function showSharePanel(text) {
             genBtn.textContent = old;
         }
     });
+    buttons.push(genBtn);
 
     const tip = document.createElement("p");
     tip.className = "tip";
-    tip.textContent = "网页不能读相册，需你手动选一次；复制文字后也可到微信粘贴";
+    tip.textContent = canShareFile
+        ? "网页不能读相册，需你手动选一次；也可复制文字到微信粘贴"
+        : "当前浏览器不支持一键分享：复制文字 → 微信粘贴；视频去「下载」里选发送";
 
     const close = document.createElement("button");
     close.className = "poster-close";
-    close.textContent = "\u2715";
+    close.textContent = "✕";
     close.addEventListener("click", () => mask.remove());
 
-    card.append(h, p, copyBtn, pickBtn, genBtn, tip, fileInput);
+    buttons.forEach(b => card.appendChild(b));
+    card.appendChild(tip);
     mask.append(card, close);
     document.body.appendChild(mask);
 }
