@@ -1061,8 +1061,8 @@ function showPosterOverlay(blob, videoHint) {
     document.body.appendChild(mask);
 }
 
-// 浏览器不支持系统分享时，给一个看得见的"分享面板"
-function showSharePanel(text, blob, filename) {
+// 分享面板：任何时候点「分享给家人」都会看到它
+function showSharePanel(text) {
     const mask = document.createElement("div");
     mask.className = "poster-mask";
 
@@ -1078,7 +1078,7 @@ function showSharePanel(text, blob, filename) {
 
     const copyBtn = document.createElement("button");
     copyBtn.className = "btn-copy";
-    copyBtn.textContent = "📋 复制这段文字";
+    copyBtn.textContent = "\ud83d\udccb 复制这段文字";
     copyBtn.addEventListener("click", async () => {
         try {
             await navigator.clipboard.writeText(text);
@@ -1088,19 +1088,9 @@ function showSharePanel(text, blob, filename) {
         }
     });
 
-    const saveBtn = document.createElement("button");
-    saveBtn.className = "btn-save";
-    const isImage = blob.type && blob.type.indexOf("image") === 0;
-    saveBtn.textContent = isImage ? "⬇️ 保存海报图片" : "⬇️ 保存视频文件";
-    saveBtn.addEventListener("click", () => {
-        triggerDownload(blob, filename);
-        toast("已保存，可在微信里从「文件/相册」发送");
-    });
-
-    // 让用户自己从相册挑一个视频来分享（网页无权读取相册，但可以请用户选）
     const pickBtn = document.createElement("button");
     pickBtn.className = "btn-save";
-    pickBtn.textContent = "📁 从相册选视频分享";
+    pickBtn.textContent = "\ud83d\udcc1 从相册选视频分享";
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = "video/*";
@@ -1111,7 +1101,7 @@ function showSharePanel(text, blob, filename) {
         if (navigator.canShare && navigator.canShare({ files: [picked] })) {
             try {
                 await navigator.share({ files: [picked], title: "时光记忆" });
-                toast("已分享 🎉");
+                toast("已分享 \ud83c\udf89");
             } catch (e) {
                 if (e && e.name !== "AbortError") toast("分享失败，可直接用微信发送");
             }
@@ -1121,16 +1111,50 @@ function showSharePanel(text, blob, filename) {
     });
     pickBtn.addEventListener("click", () => fileInput.click());
 
+    const genBtn = document.createElement("button");
+    genBtn.className = "btn-copy";
+    genBtn.textContent = "\ud83c\udfac 生成视频并分享";
+    genBtn.addEventListener("click", async () => {
+        genBtn.disabled = true;
+        const old = genBtn.textContent;
+        genBtn.textContent = "正在生成…约 12 秒";
+        try {
+            const blob = await recordVideoBlob();
+            const filename = makeFilename(blob.type.indexOf("mp4") >= 0 ? "mp4" : "webm");
+            const file = new File([blob], filename, { type: blob.type });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: "时光记忆", text: text });
+                toast("已分享 \ud83c\udf89");
+            } else {
+                triggerDownload(blob, filename);
+                toast("此浏览器不能直接分享，视频已存到 Download；可去微信发送");
+            }
+        } catch (err) {
+            if (err && err.name === "AbortError") return;
+            console.error("分享视频失败：", err);
+            const poster = await canvasPosterBlob().catch(() => null);
+            if (poster) {
+                triggerDownload(poster, "shiguangjiyi_海报.png");
+                toast("录制失败，已改为保存海报；可用 Chrome 再试视频");
+            } else {
+                toast("录制失败，请用手机 Chrome 打开再试");
+            }
+        } finally {
+            genBtn.disabled = false;
+            genBtn.textContent = old;
+        }
+    });
+
     const tip = document.createElement("p");
     tip.className = "tip";
-    tip.textContent = "网页不能读取相册，需你手动选一次视频；或复制文字后到微信粘贴";
+    tip.textContent = "网页不能读相册，需你手动选一次；复制文字后也可到微信粘贴";
 
     const close = document.createElement("button");
     close.className = "poster-close";
-    close.textContent = "✕";
+    close.textContent = "\u2715";
     close.addEventListener("click", () => mask.remove());
 
-    card.append(h, p, copyBtn, pickBtn, saveBtn, tip, fileInput);
+    card.append(h, p, copyBtn, pickBtn, genBtn, tip, fileInput);
     mask.append(card, close);
     document.body.appendChild(mask);
 }
@@ -2304,79 +2328,9 @@ async function saveToPhone() {
 }
 
 async function shareToFamily() {
-    const btn = document.getElementById("shareBtn");
-    if (btn.disabled) return;
-
-    setBtnBusy(btn, true, "正在准备…");
-
     const content = AppState.aiContent || {};
-    const shareText = `${content.title || "今天的美好回忆"}${content.subtitle ? "，" + content.subtitle : ""}`;
-
-    try {
-        const blob = await recordVideoBlob();
-        const file = new File([blob], makeFilename(blob.type.indexOf("mp4") >= 0 ? "mp4" : "webm"), { type: blob.type });
-
-        // 优先：直接把视频文件交给系统分享面板（微信 / 相册 / 信息）
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-                files: [file],
-                title: "时光记忆 · 家庭多媒体日记",
-                text: shareText
-            });
-            toast("已经发出去了 🎉");
-            return;
-        }
-
-        // 其次：分享文字 + 链接
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: "时光记忆 · 家庭多媒体日记",
-                    text: shareText,
-                    url: location.href
-                });
-                toast("已分享 🎉");
-                return;
-            } catch (e) {
-                if (e && e.name === "AbortError") return;
-            }
-        }
-
-        // 最后：显示"分享面板"，复制文字 + 保存视频
-        showSharePanel(shareText, blob, file.name);
-        return;
-    } catch (err) {
-        if (err && err.name === "AbortError") return;   // 用户自己取消，不打扰
-        console.error("分享失败：", err);
-        if (err.message === "NO_SUPPORT") {
-            // 不支持录视频的设备（如部分 iPhone）：退化为分享海报图
-            try {
-                const poster = await canvasPosterBlob();
-                const imgFile = new File([poster], "时光记忆_海报.png", { type: "image/png" });
-                if (navigator.canShare && navigator.canShare({ files: [imgFile] })) {
-                    await navigator.share({ files: [imgFile], text: shareText });
-                    toast("已分享海报图 🖼️");
-                    return;
-                }
-                if (isInAppBrowser()) {
-                    showPosterOverlay(poster);
-                    return;
-                }
-            } catch (e) {}
-            toast("这个浏览器不支持直接分享，请用手机 Chrome / Safari");
-        } else {
-            // 录制失败也不要死路：弹分享面板，让用户复制文案 / 从相册选视频
-            const poster = await canvasPosterBlob().catch(() => null);
-            if (poster) {
-                showSharePanel(shareText, poster, "shiguangjiyi_海报.png");
-            } else {
-                showSharePanel(shareText, new Blob([""], { type: "text/plain" }), "shiguangjiyi.txt");
-            }
-            toast("视频没录成功，可复制文案、或从相册选视频分享");
-        }
-    } finally {
-        setBtnBusy(btn, false);
-    }
+    const shareText = `${content.title || "今天的美好回忆"}${content.subtitle ? "，" + content.subtitle : ""}\n—— 来自「时光记忆」家庭多媒体日记`;
+    showSharePanel(shareText);
 }
 
 </script>
