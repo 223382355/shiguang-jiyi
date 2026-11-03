@@ -446,21 +446,28 @@ button:active {
     display: block;
 }
 
+/* 底部通栏：整条都能点（包括三角图标） */
 .play-btn {
     position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.9);
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.94);
     border: none;
-    padding: 14px 32px;
-    border-radius: 30px;
+    padding: 16px 12px;
     font-size: 22px;
     font-weight: 700;
     color: #ff6b6b;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    z-index: 2;
 }
+
+.video-box canvas { cursor: pointer; }
 
 .video-info {
     text-align: center;
@@ -489,6 +496,61 @@ button:active {
 
 .action-btn {
     min-height: 80px;
+}
+
+/* 第二个相机按钮（白底描边） */
+.camera-btn.secondary {
+    margin-top: 14px;
+    background: #ffffff;
+    color: #e8663a;
+    border: 3px solid #ffc9b5;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* 手动输入兜底 */
+.manual-box {
+    background: #f7f7f9;
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.manual-text {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 20px;
+    line-height: 1.6;
+    padding: 14px;
+    border: 2px solid #e0e0e6;
+    border-radius: 12px;
+    font-family: inherit;
+    resize: vertical;
+    background: #fff;
+}
+
+.manual-hint {
+    font-size: 16px;
+    color: #888;
+    margin: 10px 0 0;
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    font-size: 18px;
+    text-decoration: underline;
+    padding: 8px 4px;
+    cursor: pointer;
+}
+
+/* 生成按钮 */
+.generate-btn {
+    margin-top: 16px;
+}
+
+.generate-btn:disabled {
+    opacity: 0.45;
 }
 
 .share-note {
@@ -569,10 +631,16 @@ button:active {
 
         <div class="camera-area">
             <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden-input">
+            <input type="file" id="videoInput" accept="video/*" capture="camcorder" class="hidden-input">
             <button class="big-btn camera-btn" id="cameraBtn">
                 <span class="btn-emoji">📸</span>
                 <span class="btn-text">打开相机拍照</span>
             </button>
+            <button class="big-btn camera-btn secondary" id="videoBtn">
+                <span class="btn-emoji">🎥</span>
+                <span class="btn-text">录一段视频</span>
+            </button>
+            <p class="hint small">拍视频也可以，系统会自动取其中一帧做成海报</p>
             <div class="preview-box" id="imagePreview" style="display:none;">
                 <img id="previewImg" alt="照片预览">
                 <button class="small-btn" id="retakeBtn">🔄 重新拍一张</button>
@@ -606,9 +674,17 @@ button:active {
             <button class="small-btn" id="rerecordBtn">🔄 重新录</button>
         </div>
 
-        <div class="nav-row">
+            <div class="nav-row">
             <button class="nav-btn nav-prev" id="backToStep1">← 上一步</button>
             <button class="nav-btn" id="toStep3" disabled="">下一步 →</button>
+        </div>
+
+        <!-- 识别失败时手动输入（兜底） -->
+        <div class="manual-box" id="manualBox" style="display:none;">
+            <p class="transcript-label">✏️ 手动输入今天的事</p>
+            <textarea class="manual-text" id="manualText" rows="3" placeholder="例如：今天和老张在河边钓鱼，太阳很好"></textarea>
+            <button class="small-btn" id="manualSaveBtn" style="margin-top:10px;">用这段文字</button>
+            <p class="manual-hint">识别不准时，打几个字也一样能生成视频</p>
         </div>
     </section>
 
@@ -642,6 +718,8 @@ button:active {
         <div class="nav-row">
             <button class="nav-btn nav-prev" id="backToStep2">← 上一步</button>
         </div>
+        <button class="nav-btn generate-btn" id="startGenerate" disabled="">✨ 开始生成</button>
+        <p class="hint small">选好风格后，点上面的按钮开始生成</p>
     </section>
 
     <!-- ============ 步骤3.5：生成中 ============ -->
@@ -683,6 +761,10 @@ button:active {
             <button class="big-btn action-btn" id="shareBtn">
                 <span class="btn-emoji">📤</span>
                 <span class="btn-text">分享给家人</span>
+            </button>
+            <button class="big-btn action-btn" id="changeStyleBtn">
+                <span class="btn-emoji">🎨</span>
+                <span class="btn-text">换个风格再做一次</span>
             </button>
             <button class="big-btn action-btn" id="restartBtn">
                 <span class="btn-emoji">🔄</span>
@@ -779,6 +861,7 @@ function goStep(n) {
 document.addEventListener("DOMContentLoaded", () => {
     initCamera();
     initRecorder();
+    initManualInput();
     initStyleSelect();
     initNavigation();
     initVideo();
@@ -802,13 +885,34 @@ function initNavigation() {
         // 重置 UI
         document.getElementById("imagePreview").style.display = "none";
         document.getElementById("cameraBtn").style.display = "flex";
+        document.getElementById("videoBtn").style.display = "flex";
         document.getElementById("toStep2").disabled = true;
         document.getElementById("transcriptBox").style.display = "none";
+        document.getElementById("manualBox").style.display = "none";
         document.getElementById("toStep3").disabled = true;
+        document.getElementById("startGenerate").disabled = true;
         document.querySelectorAll(".style-btn").forEach(b => b.classList.remove("selected"));
 
         stopVideoPlayback();
         goStep(1);
+    });
+}
+
+// 手动输入兜底：识别不准时也能生成
+function initManualInput() {
+    const saveBtn = document.getElementById("manualSaveBtn");
+    const textArea = document.getElementById("manualText");
+    saveBtn.addEventListener("click", () => {
+        const v = textArea.value.trim();
+        if (!v) {
+            toast("先写一句话吧～");
+            return;
+        }
+        AppState.speechText = v;
+        document.getElementById("transcriptText").textContent = v;
+        document.getElementById("transcriptBox").style.display = "block";
+        document.getElementById("toStep3").disabled = false;
+        toast("好的，就用这段文字 ✓");
     });
 }
 
@@ -820,6 +924,8 @@ function initNavigation() {
 function initCamera() {
     const cameraBtn = document.getElementById("cameraBtn");
     const cameraInput = document.getElementById("cameraInput");
+    const videoBtn = document.getElementById("videoBtn");
+    const videoInput = document.getElementById("videoInput");
     const retakeBtn = document.getElementById("retakeBtn");
     const previewImg = document.getElementById("previewImg");
     const previewBox = document.getElementById("imagePreview");
@@ -830,34 +936,89 @@ function initCamera() {
         cameraInput.click();
     });
 
+    // 录视频：调起手机摄像，取其中一帧做海报
+    videoBtn.addEventListener("click", () => {
+        videoInput.click();
+    });
+
     retakeBtn.addEventListener("click", () => {
         cameraInput.value = "";  // 清空，允许重选同一张
+        videoInput.value = "";
         previewBox.style.display = "none";
         cameraBtn.style.display = "flex";
+        videoBtn.style.display = "flex";
         AppState.imageBase64 = null;
         toStep2Btn.disabled = true;
     });
 
-    cameraInput.addEventListener("change", async (e) => {
-        const file = e.target.files && e.target.files[0];
+    const showPreview = async (file, fromVideo) => {
         if (!file) return;
-
-        // 读取为 base64
         try {
-            const base64 = await fileToBase64(file);
+            const base64 = fromVideo
+                ? await videoFileToFrame(file)
+                : await fileToBase64(file);
             AppState.imageBase64 = base64;
 
-            // 显示预览
             previewImg.src = "data:image/jpeg;base64," + base64;
             previewBox.style.display = "block";
             cameraBtn.style.display = "none";
+            videoBtn.style.display = "none";
             toStep2Btn.disabled = false;
 
-            toast("照片拍好啦！");
+            toast(fromVideo ? "视频拍好啦！已取出其中一帧 🎥" : "照片拍好啦！");
         } catch (err) {
-            console.error("读取图片失败：", err);
-            toast("照片读取失败，请重拍");
+            console.error("读取失败：", err);
+            toast("读取失败，请重试");
         }
+    };
+
+    cameraInput.addEventListener("change", (e) => {
+        showPreview(e.target.files && e.target.files[0], false);
+    });
+
+    videoInput.addEventListener("change", (e) => {
+        showPreview(e.target.files && e.target.files[0], true);
+    });
+}
+
+// 从视频文件中取一帧，转成 base64
+function videoFileToFrame(file) {
+    return new Promise((resolve, reject) => {
+        const video = document.createElement("video");
+        video.preload = "auto";
+        video.muted = true;
+        video.playsInline = true;
+        const url = URL.createObjectURL(file);
+
+        let done = false;
+        const finish = () => {
+            if (done) return;
+            done = true;
+            try {
+                const w = video.videoWidth || 720;
+                const h = video.videoHeight || 1280;
+                const scale = Math.min(1, 1080 / w);
+                const cv = document.createElement("canvas");
+                cv.width = Math.round(w * scale);
+                cv.height = Math.round(h * scale);
+                cv.getContext("2d").drawImage(video, 0, 0, cv.width, cv.height);
+                const dataUrl = cv.toDataURL("image/jpeg", 0.9);
+                URL.revokeObjectURL(url);
+                resolve(dataUrl.split(",")[1]);
+            } catch (err) {
+                URL.revokeObjectURL(url);
+                reject(err);
+            }
+        };
+
+        video.onloadeddata = () => {
+            const t = Math.min(0.3, (video.duration || 1) * 0.3);
+            try { video.currentTime = t; } catch (e) { finish(); }
+        };
+        video.onseeked = finish;
+        video.onerror = () => { URL.revokeObjectURL(url); reject(new Error("视频读取失败")); };
+        setTimeout(finish, 4000);   // 兜底
+        video.src = url;
     });
 }
 
@@ -945,15 +1106,19 @@ function initRecorder() {
 
             try {
                 const result = await API.speechToText(blob, mimeType || "audio/webm");
-                AppState.speechText = result.text || "美好的一天";
-                transcriptText.textContent = AppState.speechText;
+                const text = (result.text || "").trim();
+                if (!text) throw new Error("识别结果为空");
+                AppState.speechText = text;
+                transcriptText.textContent = text;
                 toStep3Btn.disabled = false;
+                document.getElementById("manualBox").style.display = "none";
                 toast("识别完成 ✓");
             } catch (err) {
                 console.error("ASR 失败：", err);
-                AppState.speechText = "今天心情很好";
-                transcriptText.textContent = AppState.speechText;
-                toStep3Btn.disabled = false;
+                transcriptText.textContent = "没听清，你可以打字告诉我 👇";
+                document.getElementById("manualBox").style.display = "block";
+                document.getElementById("manualText").value = "";
+                toast("语音识别没成功，可以手动打字");
             }
         };
 
@@ -1029,19 +1194,45 @@ const API = {
         throw new Error("图片识别失败");
     },
 
-    async speechToText(blob) {
-        const form = new FormData();
-        form.append("model", "glm-asr-2512");
-        form.append("stream", "false");
-        form.append("file", blob, "speech.webm");
-        const resp = await fetch(`${ZHIPU_BASE}/audio/transcriptions`, {
-            method: "POST",
-            headers: { "Authorization": `Bearer ${ZHIPU_API_KEY}` },
-            body: form
-        });
-        const data = await resp.json();
-        if (data.text) return { ok: true, text: data.text };
-        return { ok: true, text: "今天的心情很美好" };
+    async speechToText(blob, mimeType) {
+        // 依次尝试：原格式 / 转 16k WAV；两个模型名
+        const models = ["glm-asr-2512", "glm-asr"];
+        let lastErr = null;
+
+        const tries = [{ blob, ext: "webm" }];
+        try {
+            tries.push({ blob: await blobToWav(blob), ext: "wav" });
+        } catch (e) {
+            console.warn("转 WAV 失败，跳过：", e);
+        }
+
+        for (const item of tries) {
+            for (const model of models) {
+                try {
+                    const form = new FormData();
+                    form.append("model", model);
+                    form.append("stream", "false");
+                    form.append("file", item.blob, "speech." + item.ext);
+
+                    const resp = await fetch(`${ZHIPU_BASE}/audio/transcriptions`, {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${ZHIPU_API_KEY}` },
+                        body: form
+                    });
+
+                    const raw = await resp.text();
+                    let data = {};
+                    try { data = JSON.parse(raw); } catch (e) {}
+                    const text = (data.text || data.result || (data.data && data.data.text) || "").trim();
+                    if (text) return { ok: true, text };
+
+                    lastErr = new Error(`HTTP ${resp.status}: ${raw.slice(0, 100)}`);
+                } catch (e) {
+                    lastErr = e;
+                }
+            }
+        }
+        throw lastErr || new Error("语音识别失败");
     },
 
     async generateContent(imageDesc, speechText, style) {
@@ -1108,6 +1299,47 @@ const API = {
     }
 };
 
+// 把录音转成 16k 单声道 WAV（部分 ASR 接口只认 wav）
+async function blobToWav(blob) {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    try {
+        const buf = await blob.arrayBuffer();
+        const audio = await ac.decodeAudioData(buf);
+        const sr = 16000;
+        const ch = audio.getChannelData(0);
+        const ratio = audio.sampleRate / sr;
+        const len = Math.floor(ch.length / ratio);
+        const pcm = new Int16Array(len);
+        for (let i = 0; i < len; i++) {
+            let s = ch[Math.floor(i * ratio)] * 0x7fff;
+            pcm[i] = Math.max(-32768, Math.min(32767, s));
+        }
+
+        const header = new ArrayBuffer(44);
+        const v = new DataView(header);
+        const wstr = (off, str) => {
+            for (let i = 0; i < str.length; i++) v.setUint8(off + i, str.charCodeAt(i));
+        };
+        wstr(0, "RIFF");
+        v.setUint32(4, 36 + pcm.length * 2, true);
+        wstr(8, "WAVE");
+        wstr(12, "fmt ");
+        v.setUint32(16, 16, true);
+        v.setUint16(20, 1, true);
+        v.setUint16(22, 1, true);
+        v.setUint32(24, sr, true);
+        v.setUint32(28, sr * 2, true);
+        v.setUint16(32, 2, true);
+        v.setUint16(34, 16, true);
+        wstr(36, "data");
+        v.setUint32(40, pcm.length * 2, true);
+
+        return new Blob([header, pcm], { type: "audio/wav" });
+    } finally {
+        try { await ac.close(); } catch (e) {}
+    }
+}
+
 </script>
 <script>
 // ============================================
@@ -1123,15 +1355,21 @@ async function initVideo() {
     const playBtn = document.getElementById("playBtn");
     const downloadBtn = document.getElementById("downloadBtn");
     const shareBtn = document.getElementById("shareBtn");
+    const changeStyleBtn = document.getElementById("changeStyleBtn");
+    const canvas = document.getElementById("videoCanvas");
 
     playBtn.addEventListener("click", toggleVideoPlay);
-    downloadBtn.addEventListener("click", downloadVideo);
-    shareBtn.addEventListener("click", async () => {
-        if (!window.navigator.share) {
-            toast("请先点「保存到手机」，再到相册分享给家人～");
-            return;
-        }
-        toast("请先点「保存到手机」，再从相册分享给家人吧～");
+    canvas.addEventListener("click", toggleVideoPlay);   // 点画面任意位置也能播放/暂停
+
+    downloadBtn.addEventListener("click", saveToPhone);
+    shareBtn.addEventListener("click", shareToFamily);
+
+    changeStyleBtn.addEventListener("click", () => {
+        stopVideoPlayback();
+        const startBtn = document.getElementById("startGenerate");
+        startBtn.disabled = false;
+        goStep(3);
+        toast("换个风格，再点「开始生成」");
     });
 
     // 隐藏录音音频元素，用于播放用户原声
@@ -1393,59 +1631,220 @@ async function loadVideoImage() {
     });
 }
 
-// 下载视频（用 MediaRecorder 录制 canvas）
-async function downloadVideo() {
+// ============================================
+// 保存到手机 / 直接分享给家人
+// ============================================
+
+function makeFilename(ext) {
+    const d = new Date();
+    const p = n => String(n).padStart(2, "0");
+    const suffix = ext || "webm";
+    return `时光记忆_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.${suffix}`;
+}
+
+function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+}
+
+// 把 12 秒动画真正录成视频：自动从第 0 秒开始播放，用户不需要先点"播放"
+async function recordVideoBlob() {
     const canvas = document.getElementById("videoCanvas");
-    if (!isVideoPlaying) {
-        toast("请先播放视频哦~");
-        return;
+    if (!canvas || typeof canvas.captureStream !== "function" || typeof MediaRecorder === "undefined") {
+        throw new Error("NO_SUPPORT");
     }
 
-    toast("正在生成视频文件…");
+    stopVideoPlayback();
+    await new Promise(r => setTimeout(r, 60));
+    await toggleVideoPlay();      // 从头开始播
+
+    const stream = canvas.captureStream(30);
+
+    // 把老人的原声混进视频（复用播放器元素，避免双重播放）
     try {
-        const stream = canvas.captureStream(30);
+        const audioTrack = getSpeechAudioTrack();
+        if (audioTrack) stream.addTrack(audioTrack);
+    } catch (e) {
+        console.warn("原声加入失败（不影响画面）：", e);
+    }
 
-        // 添加录音音轨（如果有）
-        if (AppState.speechBlob) {
-            const audioEl = new Audio();
-            audioEl.src = URL.createObjectURL(AppState.speechBlob);
-            audioEl.muted = false;
-            audioEl.play();
-            const audioStream = audioEl.captureStream();
-            audioStream.getAudioTracks().forEach(t => stream.addTrack(t));
+    const candidates = [
+        "video/mp4;codecs=avc1.42E01E",
+        "video/mp4",
+        "video/webm;codecs=vp9",
+        "video/webm;codecs=vp8",
+        "video/webm"
+    ];
+    let mimeType = "video/webm";
+    for (const t of candidates) {
+        if (MediaRecorder.isTypeSupported(t)) { mimeType = t; break; }
+    }
+
+    const chunks = [];
+    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 2_500_000 });
+    recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+
+    const stopped = new Promise(resolve => { recorder.onstop = resolve; });
+    recorder.start();
+    await new Promise(r => setTimeout(r, 12000));
+    if (recorder.state !== "inactive") recorder.stop();
+    await stopped;
+
+    stream.getTracks().forEach(t => t.stop());
+    stopVideoPlayback();
+
+    if (!chunks.length) throw new Error("EMPTY");
+    return new Blob(chunks, { type: mimeType });
+}
+
+// 把播放器里的原声接成一条音轨，供录制时混入
+function getSpeechAudioTrack() {
+    const el = document.getElementById("recordingPlayer");
+    if (!AppState.speechBlob) return null;
+    try {
+        if (!window.__speechAudioCtx) {
+            const ac = new (window.AudioContext || window.webkitAudioContext)();
+            if (ac.state === "suspended") ac.resume();
+            const dest = ac.createMediaStreamDestination();
+            const src = ac.createMediaElementSource(el);
+            src.connect(ac.destination);
+            src.connect(dest);
+            window.__speechAudioCtx = ac;
+            window.__speechAudioDest = dest;
         }
+        return window.__speechAudioDest.stream.getAudioTracks()[0] || null;
+    } catch (e) {
+        console.warn("原声接轨失败：", e);
+        return null;
+    }
+}
 
-        // 选择 MediaRecorder 支持的格式
-        const mimeTypes = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
-        let mimeType = "video/webm";
-        for (const t of mimeTypes) {
-            if (MediaRecorder.isTypeSupported(t)) { mimeType = t; break; }
+// 浏览器不支持录视频时的兜底：存一张海报图
+function canvasPosterBlob() {
+    return new Promise((resolve, reject) => {
+        const canvas = document.getElementById("videoCanvas");
+        canvas.toBlob((blob) => {
+            blob ? resolve(blob) : reject(new Error("导出失败"));
+        }, "image/png");
+    });
+}
+
+async function savePoster() {
+    const blob = await canvasPosterBlob();
+    triggerDownload(blob, "时光记忆_海报.png");
+    toast("已保存一张海报 🖼️");
+}
+
+function setBtnBusy(btn, busy, busyText) {
+    const label = btn.querySelector(".btn-text");
+    if (busy) {
+        btn.dataset.oldText = label.textContent;
+        label.textContent = busyText;
+        btn.disabled = true;
+    } else {
+        label.textContent = btn.dataset.oldText || label.textContent;
+        btn.disabled = false;
+    }
+}
+
+async function saveToPhone() {
+    const btn = document.getElementById("downloadBtn");
+    if (btn.disabled) return;
+
+    setBtnBusy(btn, true, "正在生成视频…");
+    toast("正在生成视频，约 12 秒，请稍等…");
+
+    try {
+        const blob = await recordVideoBlob();
+        const filename = makeFilename(blob.type.indexOf("mp4") >= 0 ? "mp4" : "webm");
+        const file = new File([blob], filename, { type: blob.type });
+
+        // iPhone：系统分享面板里可以直接「存储到照片」
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: "时光记忆" });
+            toast("已保存 🎉");
+        } else {
+            triggerDownload(blob, filename);
+            toast("已保存到手机的「下载 / 文件」里 🎉");
         }
-
-        const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 3_000_000 });
-        const chunks = [];
-        recorder.ondataavailable = (e) => chunks.push(e.data);
-        recorder.onstop = () => {
-            const blob = new Blob(chunks, { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `时光记忆_${new Date().toLocaleDateString("zh-CN").replace(/\//g, "-")}.webm`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            toast("保存成功！请到相册查看 🎉");
-        };
-
-        recorder.start();
-        setTimeout(() => {
-            recorder.stop();
-        }, 12000);  // 录制12秒
-
     } catch (err) {
-        console.error("录制失败：", err);
-        toast("视频录制失败，但可以正常播放");
+        console.error("保存失败：", err);
+        if (err.message === "NO_SUPPORT" || err.message === "EMPTY") {
+            toast("这个浏览器不支持录视频，先给你存一张海报");
+            try { await savePoster(); } catch (e) { toast("保存失败，请换 Chrome 试试"); }
+        } else {
+            toast("保存没成功，请再点一次");
+        }
+    } finally {
+        setBtnBusy(btn, false);
+    }
+}
+
+async function shareToFamily() {
+    const btn = document.getElementById("shareBtn");
+    if (btn.disabled) return;
+
+    setBtnBusy(btn, true, "正在准备…");
+
+    const content = AppState.aiContent || {};
+    const shareText = `${content.title || "今天的美好回忆"}${content.subtitle ? "，" + content.subtitle : ""}`;
+
+    try {
+        const blob = await recordVideoBlob();
+        const file = new File([blob], makeFilename(blob.type.indexOf("mp4") >= 0 ? "mp4" : "webm"), { type: blob.type });
+
+        // 优先：直接把视频文件交给系统分享面板（微信 / 相册 / 信息）
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+                files: [file],
+                title: "时光记忆 · 家庭多媒体日记",
+                text: shareText
+            });
+            toast("已经发出去了 🎉");
+            return;
+        }
+
+        // 其次：分享文字 + 链接
+        if (navigator.share) {
+            await navigator.share({
+                title: "时光记忆 · 家庭多媒体日记",
+                text: shareText,
+                url: location.href
+            });
+            return;
+        }
+
+        // 桌面浏览器：退化成下载
+        triggerDownload(blob, file.name);
+        toast("已存到下载文件夹，可以拖进微信发给家人");
+    } catch (err) {
+        if (err && err.name === "AbortError") return;   // 用户自己取消，不打扰
+        console.error("分享失败：", err);
+        if (err.message === "NO_SUPPORT") {
+            // 不支持录视频的设备（如部分 iPhone）：退化为分享海报图
+            try {
+                const poster = await canvasPosterBlob();
+                const imgFile = new File([poster], "时光记忆_海报.png", { type: "image/png" });
+                if (navigator.canShare && navigator.canShare({ files: [imgFile] })) {
+                    await navigator.share({ files: [imgFile], text: shareText });
+                    toast("已分享海报图 🖼️");
+                    return;
+                }
+            } catch (e) {}
+            toast("这个浏览器不支持直接分享，请用手机 Chrome / Safari");
+        } else {
+            toast("分享没成功，可以先「保存到手机」再发");
+        }
+    } finally {
+        setBtnBusy(btn, false);
     }
 }
 
@@ -1621,20 +2020,35 @@ class MusicGenerator {
 // ============================================
 
 function initStyleSelect() {
+    const startBtn = document.getElementById("startGenerate");
+
+    // 只负责"选中"，不自动开始 → 老人可以反悔换风格
     document.querySelectorAll(".style-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             document.querySelectorAll(".style-btn").forEach(b => b.classList.remove("selected"));
             btn.classList.add("selected");
             AppState.selectedStyle = btn.dataset.style;
-
-            // 开始 AI 处理
-            generateEverything();
+            startBtn.disabled = false;
+            startBtn.textContent = `✨ 用「${btn.dataset.style}」风格生成`;
+            toast("已选：" + btn.dataset.style);
         });
+    });
+
+    startBtn.addEventListener("click", () => {
+        if (!AppState.selectedStyle) {
+            toast("先选一个风格哦");
+            return;
+        }
+        startBtn.disabled = true;
+        generateEverything();
     });
 }
 
 async function generateEverything() {
     try {
+        // 若是"换风格重做"，先把上次的播放停掉
+        stopVideoPlayback();
+
         // 进入"生成中"页面
         goStep(3.5);
 
@@ -1689,6 +2103,7 @@ async function generateEverything() {
     } catch (err) {
         console.error("生成失败：", err);
         toast("出了点问题，试试重新来一次？");
+        document.getElementById("startGenerate").disabled = false;
         goStep(1);
     }
 }
