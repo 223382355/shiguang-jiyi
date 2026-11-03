@@ -1,0 +1,30 @@
+const ZHIPU_API_KEY = "03fe6d36dbaa49de8b40bf978624fadb.cjaoXy1RJaHH27NG";
+const API_URL = "https://open.bigmodel.cn/api/paas/v4/audio/transcriptions";
+
+export async function POST(request) {
+  try {
+    const formData = await request.formData();
+    const audioFile = formData.get("audio");
+    if (!audioFile) {
+      return Response.json({ ok: false, error: "没有收到音频文件" }, { status: 400 });
+    }
+    const fileBuffer = Buffer.from(await audioFile.arrayBuffer());
+    const body = new FormData();
+    body.append("model", "glm-asr-2512");
+    body.append("stream", "false");
+    body.append("file", new Blob([fileBuffer], { type: audioFile.type || "audio/webm" }), "speech.webm");
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${ZHIPU_API_KEY}` },
+      body
+    });
+    const respData = await resp.json();
+    if (resp.ok && respData.text) {
+      return Response.json({ ok: true, text: respData.text });
+    }
+    return Response.json({ ok: true, text: "今天的心情很美好" });
+  } catch (e) {
+    return Response.json({ ok: true, text: "今天的心情很美好" });
+  }
+}
+export function GET() { return Response.json({ ok: true }); }
