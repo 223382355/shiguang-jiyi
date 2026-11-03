@@ -253,6 +253,10 @@ button:active {
     cursor: pointer;
     box-shadow: 0 8px 30px rgba(255, 75, 43, 0.45);
     transition: all 0.15s;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .record-btn:active,
@@ -590,6 +594,69 @@ button:active {
     to { opacity: 1; transform: translate(-50%, -50%); }
 }
 
+/* ============== 应用内浏览器提示 / 海报长按保存 ============== */
+.inapp-banner {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #fff4d6;
+    color: #6b4a00;
+    font-size: 15px;
+    line-height: 1.45;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+.inapp-banner b { color: #c2410c; }
+.inapp-banner .banner-close {
+    flex: none;
+    width: 30px; height: 30px;
+    border: none; border-radius: 50%;
+    background: rgba(0, 0, 0, 0.08);
+    color: #6b4a00;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.poster-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    background: rgba(0, 0, 0, 0.88);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px;
+}
+.poster-mask img {
+    max-width: 86vw;
+    max-height: 64vh;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+.poster-mask p {
+    color: #fff;
+    font-size: 17px;
+    text-align: center;
+    line-height: 1.5;
+    margin: 0;
+}
+.poster-mask p.tip { font-size: 14px; opacity: 0.7; }
+.poster-mask .poster-close {
+    position: absolute;
+    top: 14px; right: 16px;
+    width: 42px; height: 42px;
+    border: none; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+}
+
 /* ============== 响应式 ============== */
 @media (max-width: 380px) {
     html, body { font-size: 20px; }
@@ -662,9 +729,9 @@ button:active {
         <div class="record-area">
             <button class="record-btn" id="recordBtn">
                 <span class="record-icon">🎤</span>
-                <span class="record-text">按住说话</span>
+                <span class="record-text">点击说话</span>
             </button>
-            <p class="record-hint" id="recordHint">按住上面的红色按钮开始说话…</p>
+            <p class="record-hint" id="recordHint">点一下红色按钮开始说话，说完再点一下结束</p>
         </div>
 
         <!-- 语音转文字预览 -->
@@ -865,7 +932,64 @@ document.addEventListener("DOMContentLoaded", () => {
     initStyleSelect();
     initNavigation();
     initVideo();
+    initInAppBanner();
 });
+
+// ---------- 应用内浏览器（微信/QQ 等）适配 ----------
+function isInAppBrowser() {
+    return /MicroMessenger|QQ\/|AlipayClient|Weibo|DingTalk|aweme|baiduboxapp/i.test(navigator.userAgent);
+}
+
+function initInAppBanner() {
+    if (!isInAppBrowser()) return;
+    const bar = document.createElement("div");
+    bar.className = "inapp-banner";
+
+    const msg = document.createElement("div");
+    msg.style.flex = "1";
+    msg.innerHTML = '📱 当前是微信/QQ 内浏览器，录音和保存会受限。请点右上角 <b>…</b> → <b>在浏览器打开</b>';
+
+    const btn = document.createElement("button");
+    btn.className = "banner-close";
+    btn.textContent = "✕";
+    btn.addEventListener("click", () => bar.remove());
+
+    bar.appendChild(msg);
+    bar.appendChild(btn);
+    document.body.appendChild(bar);
+}
+
+// 长按保存海报（应用内浏览器里唯一可靠的方式）
+function showPosterOverlay(blob) {
+    const url = URL.createObjectURL(blob);
+    const mask = document.createElement("div");
+    mask.className = "poster-mask";
+
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "时光记忆海报";
+
+    const tip = document.createElement("p");
+    tip.textContent = "长按上面的图片 → 选择「保存图片 / 保存到相册」";
+
+    const tip2 = document.createElement("p");
+    tip2.className = "tip";
+    tip2.textContent = "想保存视频？请点右上角「…」→ 在浏览器打开";
+
+    const close = document.createElement("button");
+    close.className = "poster-close";
+    close.textContent = "✕";
+    close.addEventListener("click", () => {
+        URL.revokeObjectURL(url);
+        mask.remove();
+    });
+
+    mask.appendChild(close);
+    mask.appendChild(img);
+    mask.appendChild(tip);
+    mask.appendChild(tip2);
+    document.body.appendChild(mask);
+}
 
 function initNavigation() {
     document.getElementById("toStep2").addEventListener("click", () => goStep(2));
@@ -1056,16 +1180,29 @@ function initRecorder() {
     let audioCtx = null;
     let silenceTimer = null;
 
-    // 长按录音（touchstart/touchend 兼容移动端；mousedown/mouseup 兼容桌面）
+    // 点一下开始、再点一下结束（比"按住"更稳：不会触发长按菜单，也更好按）
     const startRecord = async () => {
         if (isRecording) return;
+
+        // 应用内浏览器/旧浏览器可能完全没有麦克风接口
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            recordHint.textContent = "这个浏览器不支持录音，可以直接打字";
+            document.getElementById("manualBox").style.display = "block";
+            toast("当前浏览器不支持录音，请在下方手动输入");
+            return;
+        }
+
+        recordHint.textContent = "正在打开麦克风…";
         try {
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         } catch (err) {
             console.error("麦克风权限错误：", err);
-            toast("请允许使用麦克风哦~");
+            recordHint.textContent = "麦克风没打开，可以直接打字";
+            document.getElementById("manualBox").style.display = "block";
+            toast("请允许使用麦克风，或直接在下方打字");
             return;
         }
+        document.getElementById("manualBox").style.display = "none";
 
         isRecording = true;
         AppState.audioChunks = [];
@@ -1097,7 +1234,7 @@ function initRecorder() {
 
             recordBtn.classList.remove("recording");
             recordIcon.textContent = "🎤";
-            recordText.textContent = "按住说话";
+            recordText.textContent = "点击说话";
             recordHint.textContent = "录音结束，正在识别你说的话…";
 
             // 调用后端 ASR
@@ -1125,8 +1262,8 @@ function initRecorder() {
         AppState.mediaRecorder.start();
         recordBtn.classList.add("recording");
         recordIcon.textContent = "🔴";
-        recordText.textContent = "松开结束";
-        recordHint.textContent = "正在录音… 松开按钮停止";
+        recordText.textContent = "点击结束";
+        recordHint.textContent = "正在听你说…说完再点一下";
     };
 
     const stopRecord = () => {
@@ -1138,15 +1275,12 @@ function initRecorder() {
         }
     };
 
-    // 移动端事件
-    recordBtn.addEventListener("touchstart", (e) => { e.preventDefault(); startRecord(); });
-    recordBtn.addEventListener("touchend", (e) => { e.preventDefault(); stopRecord(); });
-    recordBtn.addEventListener("touchcancel", (e) => { e.preventDefault(); stopRecord(); });
-
-    // 桌面事件
-    recordBtn.addEventListener("mousedown", startRecord);
-    recordBtn.addEventListener("mouseup", stopRecord);
-    recordBtn.addEventListener("mouseleave", () => { if (isRecording) stopRecord(); });
+    // 点一下开始、再点一下结束（比"按住"更稳：不会触发长按菜单，也更好按）
+    recordBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (isRecording) stopRecord();
+        else startRecord();
+    });
 
     // 重新录音
     rerecordBtn.addEventListener("click", () => {
@@ -1778,8 +1912,13 @@ async function saveToPhone() {
     } catch (err) {
         console.error("保存失败：", err);
         if (err.message === "NO_SUPPORT" || err.message === "EMPTY") {
-            toast("这个浏览器不支持录视频，先给你存一张海报");
-            try { await savePoster(); } catch (e) { toast("保存失败，请换 Chrome 试试"); }
+            try {
+                const poster = await canvasPosterBlob();
+                if (isInAppBrowser()) showPosterOverlay(poster);
+                else await savePoster();
+            } catch (e) {
+                toast("保存失败，请换 Chrome 再试");
+            }
         } else {
             toast("保存没成功，请再点一次");
         }
@@ -1836,6 +1975,10 @@ async function shareToFamily() {
                 if (navigator.canShare && navigator.canShare({ files: [imgFile] })) {
                     await navigator.share({ files: [imgFile], text: shareText });
                     toast("已分享海报图 🖼️");
+                    return;
+                }
+                if (isInAppBrowser()) {
+                    showPosterOverlay(poster);
                     return;
                 }
             } catch (e) {}
