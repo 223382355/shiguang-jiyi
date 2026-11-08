@@ -90,41 +90,103 @@
   // ---------------- 语音转文字 ----------------
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
-  let listening = false;
+  let voiceState = "idle"; // idle | starting | listening
+  let voiceSupported = !!SpeechRecognition;
+  let voiceTimer = null;
   let voiceBase = "";
   let voiceFinal = "";
+  let voiceStoppedByUser = false;
+  let voiceError = "";
 
-  function setVoiceUI(on) {
+  function setVoiceUI(state) {
+    voiceState = state;
     const btn = $("voice-btn");
-    btn.classList.toggle("recording", on);
-    $("voice-label").textContent = on ? "正在听… 点一下结束" : "点一下，说话";
+    btn.classList.toggle("recording", state === "listening");
+    btn.classList.toggle("starting", state === "starting");
+    if (state === "starting") {
+      $("voice-label").textContent = "正在启动… 再点一下取消";
+    } else if (state === "listening") {
+      $("voice-label").textContent = "正在听… 点一下结束";
+    } else {
+      $("voice-label").textContent = voiceSupported ? "点一下，说话" : "用键盘话筒";
+    }
+  }
+
+  function focusKeyboardVoice() {
+    const input = $("story-input");
+    input.focus();
+    input.scrollIntoView({ behavior: "smooth", block: "center" });
+    $("voice-tip").textContent = "请点手机键盘上的话筒图标说话，说完文字会出现在输入框里";
+  }
+
+  function clearVoiceTimer() {
+    if (voiceTimer) {
+      clearTimeout(voiceTimer);
+      voiceTimer = null;
+    }
+  }
+
+  function stopRecognition(tip) {
+    clearVoiceTimer();
+    voiceStoppedByUser = true;
+    if (recognition && voiceState !== "idle") {
+      try { recognition.stop(); } catch (e) { /* 忽略 */ }
+      setTimeout(() => {
+        if (voiceState !== "idle") {
+          try { recognition.abort(); } catch (e) { /* 忽略 */ }
+          setVoiceUI("idle");
+        }
+      }, 800);
+    }
+    setVoiceUI("idle");
+    if (tip) $("voice-tip").textContent = tip;
   }
 
   function stopVoiceIfListening() {
-    if (listening && recognition) {
-      try { recognition.stop(); } catch (e) { /* 忽略 */ }
-    }
+    if (voiceState !== "idle") stopRecognition();
   }
 
   function initVoice() {
-    if (!SpeechRecognition) {
-      $("voice-btn").disabled = true;
-      $("voice-label").textContent = "当前浏览器不支持网页语音";
-      $("voice-tip").textContent = "请点输入框，用键盘上的话筒说话，或直接打字";
+    const btn = $("voice-btn");
+    const keyboardBtn = $("voice-keyboard");
+
+    if (!voiceSupported) {
+      btn.classList.add("keyboard-mode");
+      $("voice-label").textContent = "用键盘话筒";
+      $("voice-tip").textContent = "这个浏览器不支持网页语音，点按钮打开输入框，再点键盘上的话筒";
+      btn.addEventListener("click", focusKeyboardVoice);
+      if (keyboardBtn) keyboardBtn.classList.add("hidden");
       return;
     }
-    recognition = new SpeechRecognition();
+
+    try {
+      recognition = new SpeechRecognition();
+    } catch (e) {
+      voiceSupported = false;
+      btn.classList.add("keyboard-mode");
+      $("voice-label").textContent = "用键盘话筒";
+      $("voice-tip").textContent = "语音启动失败，请点按钮打开输入框，再用键盘上的话筒";
+      btn.addEventListener("click", focusKeyboardVoice);
+      if (keyboardBtn) keyboardBtn.classList.add("hidden");
+      return;
+    }
+
     recognition.lang = "zh-CN";
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
-      listening = true;
-      voiceBase = $("story-input").value;
-      voiceFinal = "";
-      setVoiceUI(true);
-      $("voice-tip").textContent = "请说话，说完会自动变成文字";
+      if (voiceState === "idle") {
+        // 用户已经取消，但浏览器这时才真正启动
+        try { recognition.abort(); } catch (e) { /* 忽略 */ }
+        return;
+      }
+      clearVoiceTimer();
+      voiceStoppedByUser = false;
+      voiceError = "";
+      setVoiceUI("listening");
+      $("voice-tip").textContent = "请说话，说完会自动变成文字；再点一下可以结束";
     };
 
     recognition.onresult = (event) => {
@@ -135,45 +197,92 @@
         else interim += text;
       }
       $("story-input").value = (voiceBase + voiceFinal + interim).slice(0, 200);
+      if (voiceFinal) $("voice-tip").textContent = "已转成文字，可以修改";
     };
 
     recognition.onerror = (event) => {
-      console.warn("语音识别失败：", event.error);
-      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        $("voice-tip").textContent = "没有麦克风权限，请在浏览器设置里允许，或直接打字";
-      } else if (event.error === "no-speech") {
-        $("voice-tip").textContent = "没听清，再点一次说说看";
+      clearVoiceTimer();
+      const code = event.error || "";
+      voiceError = code;
+      console.warn("语音识别失败：", code);
+      setVoiceUI("idle");
+      if (code === "not-allowed" || code === "service-not-allowed") {
+        $("voice-tip").textContent = "没有麦克风权限。请在浏览器设置里允许，或点「用键盘话筒」";
+      } else if (code === "no-speech") {
+        $("voice-tip").textContent = "没听清，再点一次，或点「用键盘话筒」";
+      } else if (code === "network") {
+        $("voice-tip").textContent = "语音服务连不上，请点「用键盘话筒」，用手机键盘上的话筒说话";
+      } else if (code === "audio-capture") {
+        $("voice-tip").textContent = "没找到麦克风，请点「用键盘话筒」";
+      } else if (code === "aborted") {
+        // 用户主动取消，不覆盖现有提示
       } else {
-        $("voice-tip").textContent = "语音识别没成功，请直接打字或用键盘上的话筒";
+        $("voice-tip").textContent = "语音识别没成功，请点「用键盘话筒」";
       }
     };
 
     recognition.onend = () => {
-      listening = false;
-      setVoiceUI(false);
-      if (voiceFinal) {
+      clearVoiceTimer();
+      const hadText = !!voiceFinal;
+      setVoiceUI("idle");
+      if (voiceError) {
+        voiceError = "";
+        return;
+      }
+      if (voiceStoppedByUser) {
+        voiceStoppedByUser = false;
+        return;
+      }
+      if (hadText) {
         $("voice-tip").textContent = "已转成文字，可以修改";
-      } else if (!$("voice-tip").textContent.includes("权限") && !$("voice-tip").textContent.includes("没成功")) {
-        $("voice-tip").textContent = "没听清，再点一次说说看";
+      } else {
+        $("voice-tip").textContent = "没听清，再点一次，或点「用键盘话筒」";
       }
     };
 
-    $("voice-btn").addEventListener("click", () => {
-      if (listening) {
-        stopVoiceIfListening();
+    btn.addEventListener("click", () => {
+      if (voiceState !== "idle") {
+        stopRecognition("已停止，可以继续修改文字，或点「用键盘话筒」");
         return;
       }
+
       voiceBase = $("story-input").value;
       voiceFinal = "";
+      voiceStoppedByUser = false;
+      voiceError = "";
+      setVoiceUI("starting");
+      $("voice-tip").textContent = "正在启动语音… 再点一下取消";
+
+      clearVoiceTimer();
+      voiceTimer = setTimeout(() => {
+        if (voiceState === "starting") {
+          stopRecognition("语音没有启动成功，请点「用键盘话筒」");
+        }
+      }, 4500);
+
       try {
         recognition.start();
       } catch (e) {
-        try { recognition.stop(); } catch (e2) { /* 忽略 */ }
+        clearVoiceTimer();
+        try { recognition.abort(); } catch (e2) { /* 忽略 */ }
+        setVoiceUI("idle");
+        $("voice-tip").textContent = "语音启动失败，请点「用键盘话筒」";
       }
     });
+
+    if (keyboardBtn) {
+      keyboardBtn.addEventListener("click", focusKeyboardVoice);
+    }
   }
 
-  initVoice();
+  try {
+    initVoice();
+  } catch (e) {
+    console.warn("语音初始化失败：", e);
+    $("voice-btn").addEventListener("click", focusKeyboardVoice);
+    $("voice-label").textContent = "用键盘话筒";
+    $("voice-tip").textContent = "语音初始化失败，请点按钮打开输入框，再用键盘上的话筒";
+  }
 
   // ---------------- 文字 ----------------
   $("skip-story").addEventListener("click", () => {
