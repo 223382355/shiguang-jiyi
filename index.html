@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#F7F2E8">
   <meta name="description" content="拍拍故事 · 随手拍一张照片，选一种风格，生成一张带家人留言的纪念海报。">
   <title>拍拍故事 · 把今天留成一幅画</title>
-  <link rel="stylesheet" href="style.css?v=20261108e">
+  <link rel="stylesheet" href="style.css?v=20261108f">
 </head>
 <body>
   <main class="app">
@@ -142,13 +142,16 @@
   <!-- AI 设置 -->
   <div class="modal hidden" id="ai-modal">
     <div class="modal-card">
-      <h2>AI 设置（可选）</h2>
-      <p class="modal-sub">演示版在浏览器里直接调用火山方舟。Key 只保存在本机浏览器，不会上传到别处。</p>
-      <label class="field-label" for="ark-key">火山方舟 API Key</label>
+      <h2>AI 与语音设置（可选）</h2>
+      <p class="modal-sub">演示版在浏览器里直接调用火山方舟和硅基流动。Key 只保存在本机浏览器，不会上传到我们的服务器。</p>
+      <label class="field-label" for="ark-key">火山方舟 API Key（照片识别）</label>
       <input id="ark-key" type="password" autocomplete="off" placeholder="粘贴你的 Ark API Key">
       <label class="field-label" for="ark-model">模型 / 推理接入点 ID</label>
       <input id="ark-model" type="text" autocomplete="off" placeholder="例如 ep-2024xxxx 或 doubao-…-vision-…">
       <p class="field-tip">在火山方舟控制台「在线推理」里复制接入点 ID；没有就留空，系统会用本地模板生成海报。</p>
+      <label class="field-label" for="asr-key">硅基流动 API Key（语音转文字）</label>
+      <input id="asr-key" type="password" autocomplete="off" placeholder="粘贴硅基流动 API Key，用于录音转文字">
+      <p class="field-tip">在 <a href="https://cloud.siliconflow.cn" target="_blank" rel="noopener">硅基流动控制台</a> 注册后创建 API Key。只保存在本机；不填时用浏览器语音或键盘话筒。</p>
       <div class="row">
         <button class="btn btn-ghost" id="ai-clear" type="button">清除</button>
         <button class="btn btn-primary" id="ai-save" type="button">保存</button>
@@ -173,8 +176,8 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="qrcode.js"></script>
-  <script src="poster.js?v=20261108e"></script>
-  <script src="sync.js?v=20261108e"></script>
-  <script src="app.js?v=20261108e"></script>
+  <script src="poster.js?v=20261108f"></script>
+  <script src="sync.js?v=20261108f"></script>
+  <script src="app.js?v=20261108f"></script>
 </body>
 </html>

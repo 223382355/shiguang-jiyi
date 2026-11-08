@@ -91,6 +91,7 @@
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
   let voiceState = "idle"; // idle | starting | listening
+  let voiceMode = "browser"; // browser | cloud
   let voiceSupported = !!SpeechRecognition;
   let voiceTimer = null;
   let voiceBase = "";
@@ -104,9 +105,9 @@
     btn.classList.toggle("recording", state === "listening");
     btn.classList.toggle("starting", state === "starting");
     if (state === "starting") {
-      $("voice-label").textContent = "正在启动… 再点一下取消";
+      $("voice-label").textContent = voiceMode === "cloud" ? "正在打开麦克风…" : "正在启动… 再点一下取消";
     } else if (state === "listening") {
-      $("voice-label").textContent = "正在听… 点一下结束";
+      $("voice-label").textContent = voiceMode === "cloud" ? "正在录音… 点一下结束" : "正在听… 点一下结束";
     } else {
       $("voice-label").textContent = voiceSupported ? "点一下，说话" : "用键盘话筒";
     }
@@ -156,10 +157,13 @@
   }
 
   function stopVoiceIfListening() {
-    if (voiceState !== "idle") stopRecognition();
+    if (voiceState === "idle") return;
+    if (voiceMode === "cloud") stopCloudRecording(true);
+    else stopRecognition();
   }
 
-  function initVoice() {
+  function initBrowserVoice() {
+    voiceMode = "browser";
     const btn = $("voice-btn");
     const keyboardBtn = $("voice-keyboard");
 
@@ -308,8 +312,240 @@
     }
   }
 
+  // ---------------- 录音上传，云端转文字（硅基流动） ----------------
+  let mediaRecorder = null;
+  let mediaStream = null;
+  let audioChunks = [];
+  let cloudTimer = null;
+  let cloudCancelled = false;
+  let voiceTranscribing = false;
+
+  function clearCloudTimer() {
+    if (cloudTimer) {
+      clearTimeout(cloudTimer);
+      cloudTimer = null;
+    }
+  }
+
+  function stopMediaStream() {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((track) => track.stop());
+      mediaStream = null;
+    }
+  }
+
+  function pickAudioMime() {
+    const types = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
+    for (const type of types) {
+      try {
+        if (MediaRecorder.isTypeSupported(type)) return type;
+      } catch (e) { /* 忽略 */ }
+    }
+    return "";
+  }
+
+  function audioExt(type) {
+    if (type.includes("mp4")) return "m4a";
+    if (type.includes("ogg")) return "ogg";
+    if (type.includes("wav")) return "wav";
+    return "webm";
+  }
+
+  function micErrorMessage(err) {
+    const name = err && err.name;
+    if (name === "NotAllowedError" || name === "SecurityError") {
+      return "没有麦克风权限。请在浏览器设置里允许，或点「用键盘话筒」";
+    }
+    if (name === "NotFoundError") {
+      return "没找到麦克风，请点「用键盘话筒」";
+    }
+    return "打不开麦克风，请点「用键盘话筒」";
+  }
+
+  function initCloudVoice() {
+    voiceMode = "cloud";
+    voiceSupported = true;
+    const btn = $("voice-btn");
+    const keyboardBtn = $("voice-keyboard");
+
+    btn.addEventListener("click", () => {
+      if (voiceTranscribing) {
+        $("voice-tip").textContent = "正在转文字，请稍等…";
+        return;
+      }
+      if (voiceState !== "idle") {
+        stopCloudRecording(false);
+        return;
+      }
+      const cfg = SnapStory.getConfig();
+      if (!cfg.asrKey) {
+        $("ai-modal").classList.remove("hidden");
+        $("asr-key").focus();
+        showVoiceFallback("请先在设置里填「硅基流动 API Key」，保存后再点话筒");
+        return;
+      }
+      startCloudRecording(cfg.asrKey);
+    });
+
+    if (keyboardBtn) {
+      keyboardBtn.addEventListener("click", focusKeyboardVoice);
+    }
+
+    $("voice-tip").textContent = SnapStory.getConfig().asrKey
+      ? "点一下说话，说完自动转文字"
+      : "首次使用请点右上角 AI 填语音 Key；也可以点「用键盘话筒」";
+  }
+
+  async function startCloudRecording(key) {
+    setVoiceUI("starting");
+    setVoiceFallbackUI(false);
+    $("voice-tip").textContent = "正在打开麦克风…";
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true }
+      });
+    } catch (e) {
+      if (voiceState === "idle") return;
+      setVoiceUI("idle");
+      showVoiceFallback(micErrorMessage(e));
+      return;
+    }
+    if (voiceState === "idle") {
+      stopMediaStream();
+      return;
+    }
+
+    const mime = pickAudioMime();
+    try {
+      mediaRecorder = mime ? new MediaRecorder(mediaStream, { mimeType: mime }) : new MediaRecorder(mediaStream);
+    } catch (e) {
+      try {
+        mediaRecorder = new MediaRecorder(mediaStream);
+      } catch (e2) {
+        stopMediaStream();
+        setVoiceUI("idle");
+        showVoiceFallback("这个浏览器不支持网页录音，请点「用键盘话筒」");
+        return;
+      }
+    }
+
+    audioChunks = [];
+    cloudCancelled = false;
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size) audioChunks.push(e.data);
+    };
+    mediaRecorder.onstop = () => {
+      const cancelled = cloudCancelled;
+      const type = (mediaRecorder && mediaRecorder.mimeType) || mime || "audio/webm";
+      const chunks = audioChunks;
+      audioChunks = [];
+      stopMediaStream();
+      mediaRecorder = null;
+      if (cancelled) return;
+      const blob = new Blob(chunks, { type });
+      if (blob.size < 800) {
+        setVoiceUI("idle");
+        showVoiceFallback("没有录到声音，请再点一次");
+        return;
+      }
+      transcribeAudio(blob, key, type);
+    };
+
+    try {
+      mediaRecorder.start();
+    } catch (e) {
+      stopMediaStream();
+      mediaRecorder = null;
+      setVoiceUI("idle");
+      showVoiceFallback("录音启动失败，请点「用键盘话筒」");
+      return;
+    }
+
+    setVoiceUI("listening");
+    $("voice-tip").textContent = "请说话，说完点一下结束";
+    clearCloudTimer();
+    cloudTimer = setTimeout(() => {
+      if (voiceState === "listening") stopCloudRecording(false);
+    }, 30000);
+  }
+
+  function stopCloudRecording(cancel) {
+    clearCloudTimer();
+    if (cancel) cloudCancelled = true;
+    const wasStarting = voiceState === "starting";
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      setVoiceUI("idle");
+      $("voice-tip").textContent = cancel ? "已取消录音" : "正在转文字…";
+      try {
+        mediaRecorder.stop();
+      } catch (e) {
+        stopMediaStream();
+        mediaRecorder = null;
+        showVoiceFallback("录音结束失败，请再点一次");
+      }
+      return;
+    }
+    stopMediaStream();
+    setVoiceUI("idle");
+    if (cancel || wasStarting) $("voice-tip").textContent = "已取消录音";
+  }
+
+  async function transcribeAudio(blob, key, type) {
+    voiceTranscribing = true;
+    $("voice-tip").textContent = "正在转文字…";
+    const form = new FormData();
+    form.append("model", "FunAudioLLM/SenseVoiceSmall");
+    form.append("file", blob, "voice." + audioExt(type));
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 60000);
+
+    try {
+      const resp = await fetch("https://api.siliconflow.cn/v1/audio/transcriptions", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + key },
+        body: form,
+        signal: controller.signal
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        const msg = data.message || (data.error && data.error.message) || ("HTTP " + resp.status);
+        if (resp.status === 401 || resp.status === 403) {
+          showVoiceFallback("语音 Key 无效，请点右上角 AI 重新填");
+        } else {
+          showVoiceFallback("语音转文字失败：" + msg);
+        }
+        return;
+      }
+      const text = String(data.text || data.result || (data.data && data.data.text) || "").trim();
+      if (!text) {
+        showVoiceFallback("没有识别到文字，请再说一次");
+        return;
+      }
+      const input = $("story-input");
+      const base = input.value.trim();
+      input.value = (base ? base + text : text).slice(0, 200);
+      setVoiceFallbackUI(false);
+      $("voice-tip").textContent = "已转成文字，可以修改";
+    } catch (e) {
+      if (e.name === "AbortError") showVoiceFallback("转文字超时，请检查网络后再试");
+      else showVoiceFallback("语音转文字失败，请检查网络或 Key");
+      console.warn("语音转文字失败：", e);
+    } finally {
+      clearTimeout(timer);
+      voiceTranscribing = false;
+    }
+  }
+
+  function initVoiceMode() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder) {
+      initCloudVoice();
+    } else {
+      initBrowserVoice();
+    }
+  }
+
   try {
-    initVoice();
+    initVoiceMode();
   } catch (e) {
     console.warn("语音初始化失败：", e);
     $("voice-btn").addEventListener("click", focusKeyboardVoice);
@@ -604,34 +840,41 @@
   // ---------------- AI 设置 ----------------
   function updateAiHint() {
     const cfg = SnapStory.getConfig();
-    const ok = !!(cfg.key && cfg.model);
-    $("ai-hint").textContent = ok
-      ? "已配置 AI：会用火山方舟识别照片内容。"
-      : "未配置 AI 时会使用本地模板文案；点右上角 AI 可以配置。";
+    const aiOk = !!(cfg.key && cfg.model);
+    const voiceOk = !!cfg.asrKey;
+    $("ai-hint").textContent = `照片 AI：${aiOk ? "已开启" : "未配置"}；语音转文字：${voiceOk ? "已开启" : "未配置"}。点右上角 AI 可以设置。`;
   }
 
   $("ai-btn").addEventListener("click", () => {
     const cfg = SnapStory.getConfig();
     $("ark-key").value = cfg.key || "";
     $("ark-model").value = cfg.model || "";
+    $("asr-key").value = cfg.asrKey || "";
     $("ai-modal").classList.remove("hidden");
   });
 
   $("ai-save").addEventListener("click", () => {
     const key = $("ark-key").value.trim();
     const model = $("ark-model").value.trim();
-    SnapStory.setConfig({ key, model });
+    const asrKey = $("asr-key").value.trim();
+    SnapStory.setConfig({ key, model, asrKey });
     updateAiHint();
     $("ai-modal").classList.add("hidden");
-    toast(key && model ? "AI 已开启" : "已保存，未填写时用本地模板");
+    const parts = [];
+    if (key && model) parts.push("照片 AI 已开启");
+    if (asrKey) parts.push("语音转文字已开启");
+    if (asrKey && voiceMode === "cloud") $("voice-tip").textContent = "语音已开启，点话筒说话";
+    toast(parts.length ? parts.join("；") : "已保存，未填写时用本地模板");
   });
 
   $("ai-clear").addEventListener("click", () => {
     SnapStory.setConfig({});
     $("ark-key").value = "";
     $("ark-model").value = "";
+    $("asr-key").value = "";
     updateAiHint();
-    toast("已清除 AI 设置");
+    if (voiceMode === "cloud") $("voice-tip").textContent = "语音 Key 已清除，点话筒可重新设置";
+    toast("已清除 AI 和语音设置");
   });
 
   // ---------------- 帮助 ----------------
