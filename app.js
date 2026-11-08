@@ -112,11 +112,24 @@
     }
   }
 
+  function setVoiceFallbackUI(on) {
+    const tip = $("voice-tip");
+    const keyboardBtn = $("voice-keyboard");
+    if (tip) tip.classList.toggle("error", on);
+    if (keyboardBtn) keyboardBtn.classList.toggle("attention", on);
+  }
+
   function focusKeyboardVoice() {
     const input = $("story-input");
     input.focus();
     input.scrollIntoView({ behavior: "smooth", block: "center" });
+    setVoiceFallbackUI(false);
     $("voice-tip").textContent = "请点手机键盘上的话筒图标说话，说完文字会出现在输入框里";
+  }
+
+  function showVoiceFallback(message) {
+    $("voice-tip").textContent = message;
+    setVoiceFallbackUI(true);
   }
 
   function clearVoiceTimer() {
@@ -172,7 +185,7 @@
     }
 
     recognition.lang = "zh-CN";
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
@@ -186,7 +199,16 @@
       voiceStoppedByUser = false;
       voiceError = "";
       setVoiceUI("listening");
-      $("voice-tip").textContent = "请说话，说完会自动变成文字；再点一下可以结束";
+      setVoiceFallbackUI(false);
+      $("voice-tip").textContent = "请马上说话，说完点一下结束";
+      voiceTimer = setTimeout(() => {
+        if (voiceState === "listening") {
+          stopRecognition(voiceFinal ? "先转成文字，不够再点一次" : "没有识别到文字，请点「用键盘话筒」");
+          if (!voiceFinal) {
+            setVoiceFallbackUI(true);
+          }
+        }
+      }, 30000);
     };
 
     recognition.onresult = (event) => {
@@ -197,7 +219,10 @@
         else interim += text;
       }
       $("story-input").value = (voiceBase + voiceFinal + interim).slice(0, 200);
-      if (voiceFinal) $("voice-tip").textContent = "已转成文字，可以修改";
+      if (voiceFinal) {
+        setVoiceFallbackUI(false);
+        $("voice-tip").textContent = "已转成文字，可以修改";
+      }
     };
 
     recognition.onerror = (event) => {
@@ -206,18 +231,20 @@
       voiceError = code;
       console.warn("语音识别失败：", code);
       setVoiceUI("idle");
-      if (code === "not-allowed" || code === "service-not-allowed") {
-        $("voice-tip").textContent = "没有麦克风权限。请在浏览器设置里允许，或点「用键盘话筒」";
-      } else if (code === "no-speech") {
-        $("voice-tip").textContent = "没听清，再点一次，或点「用键盘话筒」";
-      } else if (code === "network") {
-        $("voice-tip").textContent = "语音服务连不上，请点「用键盘话筒」，用手机键盘上的话筒说话";
-      } else if (code === "audio-capture") {
-        $("voice-tip").textContent = "没找到麦克风，请点「用键盘话筒」";
-      } else if (code === "aborted") {
+      if (code === "aborted") {
         // 用户主动取消，不覆盖现有提示
+        return;
+      }
+      if (code === "not-allowed" || code === "service-not-allowed") {
+        showVoiceFallback("没有麦克风权限。请在浏览器设置里允许，或点「用键盘话筒」");
+      } else if (code === "no-speech") {
+        showVoiceFallback("没有听到声音，再点一次，或点「用键盘话筒」");
+      } else if (code === "network") {
+        showVoiceFallback("语音服务连不上，请点「用键盘话筒」，用手机键盘上的话筒说话");
+      } else if (code === "audio-capture") {
+        showVoiceFallback("没找到麦克风，请点「用键盘话筒」");
       } else {
-        $("voice-tip").textContent = "语音识别没成功，请点「用键盘话筒」";
+        showVoiceFallback("语音识别没成功，请点「用键盘话筒」");
       }
     };
 
@@ -236,13 +263,17 @@
       if (hadText) {
         $("voice-tip").textContent = "已转成文字，可以修改";
       } else {
-        $("voice-tip").textContent = "没听清，再点一次，或点「用键盘话筒」";
+        showVoiceFallback("没有识别到文字。这个浏览器的语音服务可能连不上，请点「用键盘话筒」");
       }
     };
 
     btn.addEventListener("click", () => {
       if (voiceState !== "idle") {
-        stopRecognition("已停止，可以继续修改文字，或点「用键盘话筒」");
+        const hadText = !!voiceFinal;
+        stopRecognition(hadText ? "已停止，可以继续修改文字" : "没有识别到文字，请点「用键盘话筒」");
+        if (!hadText) {
+          setVoiceFallbackUI(true);
+        }
         return;
       }
 
@@ -251,12 +282,14 @@
       voiceStoppedByUser = false;
       voiceError = "";
       setVoiceUI("starting");
+      setVoiceFallbackUI(false);
       $("voice-tip").textContent = "正在启动语音… 再点一下取消";
 
       clearVoiceTimer();
       voiceTimer = setTimeout(() => {
         if (voiceState === "starting") {
           stopRecognition("语音没有启动成功，请点「用键盘话筒」");
+          setVoiceFallbackUI(true);
         }
       }, 4500);
 
@@ -266,7 +299,7 @@
         clearVoiceTimer();
         try { recognition.abort(); } catch (e2) { /* 忽略 */ }
         setVoiceUI("idle");
-        $("voice-tip").textContent = "语音启动失败，请点「用键盘话筒」";
+        showVoiceFallback("语音启动失败，请点「用键盘话筒」");
       }
     });
 

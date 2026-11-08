@@ -326,8 +326,20 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
 .voice-tip {
   margin: 0;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.5;
   color: var(--soft);
+}
+
+.voice-tip.error {
+  color: #a8432a;
+  font-weight: 600;
+}
+
+.voice-keyboard.attention {
+  border-color: #b4552d;
+  background: #ffe9d6;
+  animation: voicePulse 1.6s infinite;
 }
 
 @keyframes voicePulse {
