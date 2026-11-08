@@ -1,4 +1,4 @@
-/* 拍拍故事 · 纯前端版共享逻辑：EXIF、定位天气、AI、海报绘制、二维码、本机存储 */
+/* 记忆相册 · 纯前端版共享逻辑：EXIF、定位天气、AI、海报绘制、二维码、本机存储 */
 (function (global) {
   "use strict";
 
@@ -579,7 +579,7 @@
     // 品牌
     ctx.font = font(22, false, false);
     ctx.fillStyle = rgb(soft, 0.75);
-    ctx.fillText("拍拍故事 · 把今天留成一幅画", 92, 1768);
+    ctx.fillText("记忆相册 · 把今天留成一幅画", 92, 1768);
 
     // 二维码卡片
     ctx.save();

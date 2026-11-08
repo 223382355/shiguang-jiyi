@@ -432,6 +432,7 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
 
 .actions { display: flex; gap: 12px; }
 .actions .btn { flex: 1; }
+.result-actions { margin-top: 18px; }
 
 .qr-card {
   display: flex;

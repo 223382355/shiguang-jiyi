@@ -752,11 +752,9 @@
     if (recipe.keywords && recipe.keywords.length) {
       parts.push(`<p><span>关键词</span>${recipe.keywords.map((k) => `<b>${escapeHtml(k)}</b>`).join("")}</p>`);
     }
-    const note = ai && ai.aiUsed
-      ? "AI 已识别照片并生成文案"
-      : `未使用 AI${ai && ai.reason ? `（${escapeHtml(ai.reason)}）` : ""}，已用本地模板`;
-    box.innerHTML = `<div class="insight-head">${note}</div>${parts.join("")}`;
-    box.classList.toggle("hidden", parts.length === 0);
+    const note = ai && ai.aiUsed ? "AI 已识别照片并生成文案" : "";
+    box.innerHTML = `${note ? `<div class="insight-head">${note}</div>` : ""}${parts.join("")}`;
+    box.classList.toggle("hidden", !note && parts.length === 0);
   }
 
   function escapeHtml(s) {
@@ -786,7 +784,7 @@
     if (navigator.share && navigator.canShare && dataUrl.startsWith("data:")) {
       try {
         const blob = dataUrlToBlob(dataUrl);
-        const file = new File([blob], "拍拍故事-海报.jpg", { type: "image/jpeg" });
+        const file = new File([blob], "记忆相册-海报.jpg", { type: "image/jpeg" });
         if (navigator.canShare({ files: [file] })) {
           await navigator.share({ files: [file], text: "给你做了一张海报" });
           return;
@@ -799,7 +797,7 @@
     if (!url) return;
     if (navigator.share) {
       try {
-        await navigator.share({ title: "拍拍故事", text: "给你做了一张海报，点开看看", url });
+        await navigator.share({ title: "记忆相册", text: "给你做了一张海报，点开看看", url });
         return;
       } catch (e) { /* 用户取消 */ }
     }
@@ -813,6 +811,16 @@
 
   $("download").addEventListener("click", () => {
     toast("正在保存，若没反应请长按海报保存");
+  });
+
+  $("change-style").addEventListener("click", () => {
+    if (stopCommentSync) {
+      stopCommentSync();
+      stopCommentSync = null;
+    }
+    clearTimeout(refreshTimer);
+    setStep(3);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
   $("again").addEventListener("click", () => {
@@ -842,7 +850,12 @@
     const cfg = SnapStory.getConfig();
     const aiOk = !!(cfg.key && cfg.model);
     const voiceOk = !!cfg.asrKey;
-    $("ai-hint").textContent = `照片 AI：${aiOk ? "已开启" : "未配置"}；语音转文字：${voiceOk ? "已开启" : "未配置"}。点右上角 AI 可以设置。`;
+    const parts = [];
+    if (aiOk) parts.push("照片 AI 已开启");
+    if (voiceOk) parts.push("语音转文字已开启");
+    const hint = $("ai-hint");
+    hint.textContent = parts.length ? `${parts.join("；")}。点右上角 AI 可以设置。` : "";
+    hint.classList.toggle("hidden", parts.length === 0);
   }
 
   $("ai-btn").addEventListener("click", () => {
@@ -864,7 +877,7 @@
     if (key && model) parts.push("照片 AI 已开启");
     if (asrKey) parts.push("语音转文字已开启");
     if (asrKey && voiceMode === "cloud") $("voice-tip").textContent = "语音已开启，点话筒说话";
-    toast(parts.length ? parts.join("；") : "已保存，未填写时用本地模板");
+    toast(parts.length ? parts.join("；") : "已保存");
   });
 
   $("ai-clear").addEventListener("click", () => {
